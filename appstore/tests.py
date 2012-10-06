@@ -1,4 +1,5 @@
 import unittest
+from mock import call
 from mock_django.signals import mock_signal_receiver
 
 from signals import post_app_install, post_app_uninstall
@@ -20,18 +21,20 @@ class BackendTestCase(unittest.TestCase):
 
         with mock_signal_receiver(post_app_install) as install_receiver:
             env.install(appversion)
-
-        self.assertEqual(install_receiver.call_count, 1)
-        install_receiver.assert_called_with(signal=post_app_install, sender=env, appversion=appversion)
+            self.assertEqual(install_receiver.call_args_list, [
+                call(signal=post_app_install, sender=env,
+                    appversion=appversion),
+            ])
 
         self.assertEqual(list(env.appversions.all()), [appversion])
         self.assertIn(app, env.installed_apps)
 
         with mock_signal_receiver(post_app_uninstall) as uninstall_receiver:
             env.uninstall(appversion)
-
-        self.assertEqual(uninstall_receiver.call_count, 1)
-        uninstall_receiver.assert_called_with(signal=post_app_uninstall, sender=env, appversion=appversion)
+            self.assertEqual(uninstall_receiver.call_args_list, [
+                call(signal=post_app_uninstall, sender=env,
+                    appversion=appversion),
+            ])
 
         self.assertEqual(list(env.appversions.all()), [])
         self.assertEqual(0, len(env.installed_apps))
@@ -49,7 +52,10 @@ class BackendTestCase(unittest.TestCase):
         env = Environment.objects.create(name='default')
 
         with mock_signal_receiver(post_app_install) as install_receiver:
-            import ipdb; ipdb.set_trace()
             env.install(artworks_appversion)
-
-        self.assertEqual(install_receiver.call_count, 2)
+            self.assertEqual(install_receiver.call_args_list, [
+                call(signal=post_app_install, sender=env,
+                    appversion=artists_appversion),
+                call(signal=post_app_install, sender=env,
+                    appversion=artworks_appversion),
+            ])
