@@ -24,3 +24,13 @@ class AppVersionNotInstalled(AppstoreException):
             'Cannot uninstall %s from env %s because it is not installed' % (
                 appversion, env))
 
+
+class CannotUninstallDependency(AppstoreException):
+    """
+    Raised by Environment.uninstall when trying to uninstall an AppVersion
+    which is a dependency of another installed AppVersion.
+    """
+    def __init__(self, env, appversion, parent):
+        super(CannotUninstallDependency, self).__init__(
+            'Cannot uninstall %s from %s because %s depends on it' % (
+                appversion, env, parent))
