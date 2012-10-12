@@ -42,7 +42,7 @@ class App(models.Model):
     default_for_feature = models.BooleanField()
     fork_of = models.ForeignKey('self', related_name='fork_set',
             null=True, blank=True)
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     @property
     def last_appversion(self):

@@ -13,7 +13,8 @@ class AppFeatureAdmin(admin.ModelAdmin):
 admin.site.register(AppFeature, AppFeatureAdmin)
 
 class AppAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'category', 'provides', 'image',
+            'default_for_feature', 'fork_of')
 admin.site.register(App, AppAdmin)
 
 
