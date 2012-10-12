@@ -1,18 +1,16 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 
-from mptt.models import MPTTModel, TreeForeignKey
+from taggit.managers import TaggableManager
 
 from signals import post_app_install, post_app_uninstall
 from exceptions import AppAlreadyInstalled, AppVersionNotInstalled, CannotUninstallDependency
 
 
-class AppCategory(MPTTModel):
+class AppCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     image = models.ImageField(upload_to='appstore/appcategory/logo')
-
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
     def __unicode__(self):
         return self.name
@@ -44,6 +42,7 @@ class App(models.Model):
     default_for_feature = models.BooleanField()
     fork_of = models.ForeignKey('self', related_name='fork_set',
             null=True, blank=True)
+    tags = TaggableManager()
 
     @property
     def last_appversion(self):

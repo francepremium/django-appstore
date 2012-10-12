@@ -18,6 +18,11 @@ setup(
     long_description=read('README.rst'),
     license='MIT',
     keywords='django appstore',
+    install_requires=[
+        'django',
+        'django-taggit',
+        'mock-django',
+    ],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

@@ -144,6 +144,7 @@ INSTALLED_APPS = (
     'appstore',
     'mock_django',
     'south',
+    'taggit',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )

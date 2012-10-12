@@ -1,0 +1,2 @@
+south
+-e git+git://github.com/gkuhn1/django-admin-templates-twitter-bootstrap.git#egg=admin_bootstrap
