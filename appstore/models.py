@@ -73,6 +73,10 @@ class AppVersion(models.Model):
     class Meta:
         ordering = ('app', 'version')
 
+    def get_required_by(self, env):
+        return env.appversions.exclude(pk=self.pk).filter(
+            requires=self.app.provides)
+
     def fork(self, author):
         app_fork = App(category=self.app.category, name=self.app.name,
                 description=self.app.description, image=self.app.image,
@@ -133,8 +137,7 @@ class Environment(models.Model):
         return appversion
 
     def uninstall_appversion(self, appversion):
-        required_by = self.appversions.exclude(pk=appversion.pk).filter(
-            requires=appversion.app.provides)
+        required_by = appversion.get_required_by(self)
         if required_by:
             raise CannotUninstallDependency(self, appversion,
                 required_by[0])
