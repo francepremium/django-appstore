@@ -53,13 +53,25 @@
         });
 
         $('[data-appstore-app-action]').click(function() {
-            $.post($(this).data('appstoreAppUrl'), {
+            $.ajax({
+                type: 'POST',
+                dataType: 'text',
+                url: $(this).data('appstoreAppUrl'), 
+                data: {
                     csrftoken: csrftoken, 
                     action: $(this).data('appstoreAppAction'),
-                }, function(data) {
-                    console.log(data)
-                }
-            );
+                },
+                complete: function (jqXHR, textStatus) {
+                    console.log(jqXHR, textStatus);
+                },
+                error: function (jqXHR, textStatus, errorThrown){
+                    console.log('fail', errorThrown);
+                },
+                success: function(data, textStatus, jqXHR) {
+                    console.log(data, textStatus, jqXHR)
+                    $(document).trigger('appstore.app.action', [$(this)]);
+                },
+            });
         });
     });
 </script>

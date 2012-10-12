@@ -4,6 +4,7 @@ from django import http
 from taggit.models import Tag
 
 from models import AppCategory, App
+from exceptions import AppAlreadyInstalled, AppVersionNotInstalled, CannotUninstallDependency
 
 
 class AppCategoryListView(generic.ListView):
@@ -38,14 +39,26 @@ class AppDetailView(generic.DetailView):
 
     def post(self, request, *args, **kwargs):
         environment = request.session['appstore_environment']
+        app = self.get_object()
 
         if request.user in environment.users.all():
-            if request.POST.get('action', None) == 'install':
-                result = environment.install_app(self.get_object())
-            elif request.POST.get('action', None) == 'uninstall':
-                result = environment.uninstall_app(self.get_object())
-            else:
-                return http.HttpResponseBadRequest()
+            try:
+                if request.POST.get('action', None) == 'install':
+                    result = environment.install_app(app)
+                elif request.POST.get('action', None) == 'uninstall':
+                    result = environment.uninstall_app(app)
+                elif request.POST.get('action', None) == 'fork':
+                    fork = app.fork(request.user)
+                    result = environment.install_app(fork)
+                    environment.uninstall_app(app)
+                else:
+                    return http.HttpResponseBadRequest('Unknon action')
+            except AppAlreadyInstalled:
+                return http.HttpResponseBadRequest('App already installed')
+            except CannotUninstallDependency:
+                return http.HttpResponseBadRequest(
+                    'Cannot uninstall dependency')
+
             return http.HttpResponse(status=201)
         else:
             return http.HttpResponseForbidden('Not an admin for this env')

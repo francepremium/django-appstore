@@ -4,3 +4,12 @@
     {% block body %}
     {% endblock %}
 {% endblock %}
+
+{% block extrahead %}
+<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js"></script>
+<script type="text/javascript">
+    $(document).bind('appstore.app.action', function(e, btn) {
+        location.reload();
+    });
+</script>
+{% endblock %}
