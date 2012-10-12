@@ -17,14 +17,20 @@
         {% endfor %}
     </ul>
 
+    {% if tag_list|length or request.GET.tag %}
     <h3>{% trans 'Tags' %}</h3>
     <ul>
         {% for tag in tag_list %}
         <li class="{% if request.GET.tag == tag.name %}active{% endif %}">
             <a href="?tag={% if request.GET.tag != tag.name %}{{ tag }}{% endif %}">{{ tag.name }}</a>
         </li>
+        {% empty %}
+        <li class="active">
+            <a href="?tag=">{{ request.GET.tag }}</a>
+        </li>
         {% endfor %}
     </ul>
+    {% endif %}
 </div>
 
 <table style="display: inline-block">

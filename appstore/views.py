@@ -20,10 +20,12 @@ class AppCategoryDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(AppCategoryDetailView, self).get_context_data(
             **kwargs)
-        context['appcategory_list'] = AppCategory.objects.all()
-        context['tag_list'] = Tag.objects.all()
 
+        context['appcategory_list'] = AppCategory.objects.all()
         context['app_list'] = context['object'].app_set.filter(in_appstore=True)
+        context['tag_list'] = Tag.objects.filter(
+            app__in=context['app_list']).distinct()
+
         if self.request.GET.get('tag', None):
             context['app_list'] = context['app_list'].filter(
                 tags__name=self.request.GET['tag'])
