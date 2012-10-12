@@ -1,0 +1,28 @@
+{% extends 'appstore/base.html' %}
+
+{% load i18n %}
+
+{% block body %}
+<h1>{{ object }}</h1>
+
+<table>
+    {% for app in object.app_set.all %}
+    <tr>
+        <td>
+            <img src="{{ app.image.url }}" />
+        </td>
+        <th>
+            <a href="{{ app.get_absolute_url }}" 
+                title="{% trans 'View' %} {{ app }}"
+                >{{ app }}</a>
+        </th>
+        <td>
+            {{ app.description }}
+        </td>
+        <td>
+            {% include 'appstore/_app_install_button.html' %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

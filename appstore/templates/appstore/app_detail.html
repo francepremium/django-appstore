@@ -1,0 +1,15 @@
+{% extends 'appstore/base.html' %}
+
+{% load i18n %}
+
+{% block body %}
+<h1>{{ object }}</h1>
+
+{% with app=object %}
+    {% include 'appstore/_app_install_button.html' %}
+{% endwith %}
+
+<img src="{{ object.image.url }}" />
+
+<p>{{ object.description }}</p>
+{% endblock %}

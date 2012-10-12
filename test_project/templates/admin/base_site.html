@@ -1,11 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block branding %}
-<h1>session-security demo</h1>
+<h1>django-appstore demo</h1>
 {% endblock %}
 
-{% block footer %}
-    {{ block.super }}
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js" type="text/javascript"></script>
-    {% include 'session_security/all.html' %}
+{% block extrahead %}
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js"></script>
 {% endblock %}

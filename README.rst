@@ -8,13 +8,14 @@ Features
 
 This app intends to provide a simple appstore for django. It is inspired by
 both Chrome App Store and uses the concept of Environment like Python's
-brilliant ``PyPi`` and ``virtualenv``.
+brilliant ``virtualenv``.
 
 It is left to the user of this app to connect post_app_install and
 post_app_uninstall, because this app is just a helper to make your own app
-system.
+system. It is actually made for our specific needs so you might prefer to fork
+it rather than to try to use it as-is.
 
-Templates and staticfiles use twitter bootstrap.
+Templates and staticfiles use twitter bootstrap and jQuery.
 
 Install
 -------
@@ -37,22 +38,26 @@ Documentation / design
 Views & urls
 ````````````
 
-appstore_app_list
-    Use AppListView, a filterable list of Apps.
+appstore_appcategory_list
+    Use AppCategoryList.
+
+appstore_appcategory_detail
+    Use AppCategoryDetail.
 
 appstore_app_details
-    Used as modal.
+    Used as modal to describe an app, also receives an action such as 'install'
+    or 'uninstall' as post.
 
-appstore_app_action
-    Performs an action on an environment, action can be 'install' or
-    'uninstall'.
 
 Models
 ``````
 
 - App model represents an app,
+- AppFeature has just a name, and represents a feature of an App in
+  App.provides,
 - AppCategory model allows to sort App by category in AppCategoryView,
-- AppVersion model represents a version of an App, contains dependency info,
+- AppVersion model represents a version of an App, relates to AppFeature in
+  AppVersion.requires,
 - Environment model keeps track of installed apps and versions,
 
 App and AppCategory are dumb models used to build a catchy Chrome App

@@ -1,0 +1,22 @@
+{% extends 'appstore/base.html' %}
+
+{% load i18n %}
+
+{% block body %}
+<table>
+    {% for appcategory in object_list %}
+    <tr>
+        <td>
+            <img src="{{ appcategory.image.url }}" />
+        <th>
+            <a href="{{ appcategory.get_absolute_url }}" 
+                title="{% trans 'View apps in' %} {{ appcategory }}"
+                >{{ appcategory }}</a>
+        </th>
+        <td>
+            {{ appcategory.description }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
