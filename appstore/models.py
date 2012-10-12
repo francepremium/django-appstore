@@ -40,6 +40,7 @@ class App(models.Model):
     image = models.ImageField(upload_to='appstore/app/image')
     provides = models.ForeignKey(AppFeature)
     default_for_feature = models.BooleanField()
+    in_appstore = models.BooleanField()
     fork_of = models.ForeignKey('self', related_name='fork_set',
             null=True, blank=True)
     tags = TaggableManager(blank=True)
@@ -62,7 +63,6 @@ class AppVersion(models.Model):
     app = models.ForeignKey(App)
     version = models.IntegerField()
     requires = models.ManyToManyField(AppFeature, blank=True)
-    public = models.BooleanField()
     author = models.ForeignKey('auth.user')
     fork_of = models.ForeignKey('self', related_name='fork_set',
             null=True, blank=True)

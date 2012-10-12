@@ -22,21 +22,22 @@ class BackendTestCase(unittest.TestCase):
 
         self.artists_app = App.objects.create(name='artists',
             category=self.appcategory, provides=self.artist_appfeature,
-            default_for_feature=True)
+            default_for_feature=True, in_appstore=True)
         self.artists_appversion = AppVersion.objects.create(
-            app=self.artists_app, version=0, author=self.user, public=True)
+            app=self.artists_app, version=0, author=self.user)
 
         self.artworks_app = App.objects.create(name='generic artworks',
             category=self.appcategory, provides=self.artwork_appfeature,
-            default_for_feature=True)
+            default_for_feature=True, in_appstore=True)
         self.artworks_appversion = AppVersion.objects.create(
-            app=self.artworks_app, version=0, author=self.user, public=True)
+            app=self.artworks_app, version=0, author=self.user)
         self.artworks_appversion.requires.add(self.artist_appfeature)
 
         self.paintings_app = App.objects.create(name='paintings',
-            category=self.appcategory, provides=self.artwork_appfeature)
+            category=self.appcategory, provides=self.artwork_appfeature,
+            in_appstore=True)
         self.paintings_appversion = AppVersion.objects.create(
-            app=self.paintings_app, version=0, author=self.user, public=True)
+            app=self.paintings_app, version=0, author=self.user)
         self.paintings_appversion.requires.add(self.artist_appfeature)
 
         self.env = Environment.objects.create(name='default')
@@ -153,10 +154,10 @@ class BackendTestCase(unittest.TestCase):
         self.assertEqual(self.artworks_app.image, fork.app.image)
         self.assertEqual(self.artworks_app.provides, fork.app.provides)
         self.assertFalse(fork.app.default_for_feature)
+        self.assertFalse(fork.app.in_appstore)
         self.assertEqual(self.artworks_app, fork.app.fork_of)
 
         self.assertEqual(fork.version, self.artworks_appversion.version)
         self.assertNotEqual(fork.app, self.artworks_app)
-        self.assertFalse(fork.public)
         self.assertEqual(fork.author, forker)
         self.assertListEqual(list(fork.requires.all()), [self.artist_appfeature])

@@ -1,6 +1,8 @@
 from django.views import generic
 from django import http
 
+from taggit.models import Tag
+
 from models import AppCategory, App
 
 
@@ -14,6 +16,19 @@ class AppCategoryDetailView(generic.DetailView):
     def get_object(self, queryset=None):
         return self.get_queryset().get(
             name=self.kwargs['appcategory'].replace('--', '/'))
+
+    def get_context_data(self, **kwargs):
+        context = super(AppCategoryDetailView, self).get_context_data(
+            **kwargs)
+        context['appcategory_list'] = AppCategory.objects.all()
+        context['tag_list'] = Tag.objects.all()
+
+        context['app_list'] = context['object'].app_set.filter(in_appstore=True)
+        if self.request.GET.get('tag', None):
+            context['app_list'] = context['app_list'].filter(
+                tags__name=self.request.GET['tag'])
+
+        return context
 
 
 class AppDetailView(generic.DetailView):

@@ -14,18 +14,15 @@ admin.site.register(AppFeature, AppFeatureAdmin)
 
 class AppAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'provides', 'image',
-            'default_for_feature', 'fork_of')
+            'default_for_feature', 'fork_of', 'in_appstore')
+    list_editable = ('category', 'provides',
+            'default_for_feature', 'in_appstore')
 admin.site.register(App, AppAdmin)
 
 
 class AppVersionAdmin(admin.ModelAdmin):
-    list_display = ('app', 'version', 'public', 'fork_of', 'dependency_list',
+    list_display = ('app', 'version', 'fork_of',
         'author')
-
-    def dependency_list(self, obj):
-        return u', '.join(obj.dependencies.values_list('name', flat=True))
-
-    list_editable = ('public',)
 admin.site.register(AppVersion, AppVersionAdmin)
 
 
