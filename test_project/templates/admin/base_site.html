@@ -4,3 +4,11 @@
 <h1>django-appstore demo</h1>
 {% endblock %}
 
+{% block extrastyle %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css">
+{% endblock %}
+
+{% block extrahead %}
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+{% endblock %}
