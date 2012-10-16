@@ -12,7 +12,7 @@
     <ul>
         {% for appcategory in appcategory_list %}
         <li class="{% if appcategory == object %}active{% endif %}">
-            <a href="{{ appcategory.get_absolute_url }}{% if request.GET.tag %}?tag={{ request.GET.tag }}{% endif %}">{{ appcategory }}</a>
+            <a href="{{ appcategory.get_absolute_url }}">{{ appcategory }}</a>
         </li>
         {% endfor %}
     </ul>
