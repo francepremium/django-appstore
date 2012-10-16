@@ -1,11 +1,13 @@
 {% load i18n %}
 
-<a style="{% if app not in request.session.appstore_environment.installed_apps %}display: none{% endif %}" href="#uninstall_{{ app|slugify }}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
+{% if app in request.session.appstore_environment.installed_apps %}
+
+<a href="#uninstall_{{ app|slugify }}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
 
 <div class="modal" id="uninstall_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="myModalLabel">{% trans 'Uninstall' %} {{ app }}</h3>
+        <h3>{% trans 'Uninstall' %} {{ app }}</h3>
     </div>
     <div class="modal-body">
         <p>
@@ -22,12 +24,14 @@
     </div>
 </div>
 
-<a style="{% if app in request.session.appstore_environment.installed_apps %}display:none{% endif %}" href="#install_{{ app|slugify }}" role="button" class="btn install" data-toggle="modal">{% trans 'Install' %}</a>
+{% else %}
+
+<a href="#install_{{ app|slugify }}" role="button" class="btn install" data-toggle="modal">{% trans 'Install' %}</a>
 
 <div class="modal hidden" id="install_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="myModalLabel">{% trans 'Install' %} {{ app }}</h3>
+        <h3>{% trans 'Install' %} {{ app }}</h3>
     </div>
     <div class="modal-body">
         <p>
@@ -43,3 +47,5 @@
         <button class="btn btn-primary" data-appstore-app-action="install" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Install' %}</button>
     </div>
 </div>
+
+{% endif %}
