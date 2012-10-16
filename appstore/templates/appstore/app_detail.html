@@ -5,6 +5,17 @@
 {% block body %}
 <h1>{{ object }}</h1>
 
+{% trans 'Category' %}
+<a href="{{ object.category.get_absolute_url }}" title="{% trans 'View apps for' %} {{ object.category }}">{{ object.category }}</a>
+
+<br />
+{% if object.tags.count %}
+    {% trans 'Tags' %}
+    {% for tag in object.tags.all %}
+        {{ tag }} {% if not forloop.last %}, {% endif %}
+    {% endfor %}
+{% endif %}
+
 {% with app=object %}
     {% include 'appstore/_app_install_button.html' %}
 {% endwith %}
