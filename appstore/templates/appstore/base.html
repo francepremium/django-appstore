@@ -53,6 +53,7 @@
         });
 
         $('[data-appstore-app-action]').click(function() {
+            {% if request.user.is_authenticated %}
             $.ajax({
                 type: 'POST',
                 dataType: 'text',
@@ -69,9 +70,12 @@
                 },
                 success: function(data, textStatus, jqXHR) {
                     console.log(data, textStatus, jqXHR)
-                    $(document).trigger('appstore.app.action', [$(this)]);
+                    $(this).trigger('appstore.app.action');
                 },
             });
+            {% else %}
+            $(this).trigger('appstore.app.require_env');
+            {% endif %}
         });
     });
 </script>
