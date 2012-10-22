@@ -1,3 +1,5 @@
+.. image:: https://secure.travis-ci.org/yourlabs/django-appstore.png?branch=master
+
 django-appstore
 ===============
 
