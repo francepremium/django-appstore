@@ -1,7 +1,12 @@
 django-appstore
 ===============
 
-Status: beta software.
+Status: alpha software. 
+
+Intended audience: experienced django web developers, the installation
+procedure contains many steps to fail and require a lot of care. **Or** newbies
+with time and motivation to learn about django app reusability and best
+practices.
 
 Features
 --------
@@ -25,10 +30,14 @@ Install
   ``syncdb`` or ``migrate``,
 - include urls by adding ``url(r'appstore/', include('appstore.urls'))`` to
   ``urls.py``,
+- install ``appstore.middleware.EnvironmentMiddleware`` to begin with, you might
+  want to replace it with your own implementation later though,
 - install templates by overriding ``appstore/base.html`` to customize the
-  parent template and blocks.
+  parent template and blocks,
 - if you have problems with static files, rely on Django's documentation or
   YourLabs blog article which is shorter,
+- bind javascript signals, you can copy the js from
+  ``test_project/templates/site_base.html`` to begin with,
 - implement ``post_app_install`` and ``post_app_uninstall`` signals like you
   want.
 
@@ -64,11 +73,27 @@ App and AppCategory are dumb models used to build a catchy Chrome App
 Store-like frontend. AppVersion and Environment are used to build the Pythonic
 package management backend.
 
-Signals
-```````
+Python Signals
+``````````````
 
-post_app_install
+``post_app_install``
     Triggered when an app is installed into an environment.
 
-post_app_uninstall
+``post_app_uninstall``
     Triggered when an app is uninstalled from an environment.
+
+Javascript signals
+``````````````````
+
+You can see an example implementation of javascript slots in
+``test_project/templates/site_base.html``.
+
+``appstore.app.action``
+    Triggered when an app is installed or uninstalled successfully.
+
+``appstore.app.error``
+    Triggered when an app failed to install or uninstall.
+
+``appstore.app.require_env``
+    Triggered when the user clicked to install an app, but has no environment
+    selected in his sesession, ie. not authenticated.
