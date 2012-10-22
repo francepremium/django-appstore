@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<a href="#uninstall_{{ app|slugify }}" style="{% if request.session.appstore_environment and app not in request.session.appstore_environment.installed_apps %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
+<a href="#uninstall_{{ app|slugify }}" style="{% if app not in request.session.appstore_environment.installed_apps or not request.session.appstore_environment %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
 
 <div class="modal" id="uninstall_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
