@@ -54,6 +54,8 @@
 
         $('[data-appstore-app-action]').click(function() {
             {% if request.user.is_authenticated %}
+            var btn = $(this);
+
             $.ajax({
                 type: 'POST',
                 dataType: 'text',
@@ -62,15 +64,11 @@
                     csrftoken: csrftoken, 
                     action: $(this).data('appstoreAppAction'),
                 },
-                complete: function (jqXHR, textStatus) {
-                    console.log(jqXHR, textStatus);
-                },
                 error: function (jqXHR, textStatus, errorThrown){
-                    console.log('fail', errorThrown);
+                    btn.trigger('appstore.app.error', [jqXHR, textStatus, errorThrown]);
                 },
                 success: function(data, textStatus, jqXHR) {
-                    console.log(data, textStatus, jqXHR)
-                    $(this).trigger('appstore.app.action');
+                    btn.trigger('appstore.app.action');
                 },
             });
             {% else %}

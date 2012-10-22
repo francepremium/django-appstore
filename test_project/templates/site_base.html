@@ -5,22 +5,42 @@
     {% endblock %}
     {% block extra_body %}
     {% endblock %}
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $(this).bind('appstore.app.action', function(e, btn) {
+            /*
+            // This toggles the right install/uninstall button, but it doesn't
+            // Do the toggle for installed dependencies.
+
+            var action = $(e.target).data('appstoreAppAction');
+            var otherAction = action == 'install' ? 'uninstall' : 'install';
+            var appSlug = $(e.target).data('appstoreAppSlug');
+            var mainBtn = $('a[href="#' + action + '_' + appSlug + '"]');
+            var otherBtn = $('a[href="#' + otherAction + '_' + appSlug + '"]');
+
+            mainBtn.hide();
+            otherBtn.show();
+            $('.modal:visible').modal('hide');
+             */
+            location.reload();
+        });
+
+        $(this).bind('appstore.app.error', function(e, jqXHR, textStatus, errorThrown) {
+            alert(jqXHR.responseText);
+            $('.modal:visible').modal('hide');
+        });
+
+        {% if not request.user.is_authenticated %}
+            $(this).bind('appstore.app.require_env', function(e) {
+                location.href = '{% url login %}?next=' + $(e.target).data('appstoreAppUrl');
+            });
+        {% endif %}
+    });
+    </script>
+
 {% endblock %}
 
 {% block extrahead %}
 <script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js"></script>
-<script type="text/javascript">
-    $(document).bind('appstore.app.action', function(e, btn) {
-        location.reload();
-    });
-
-
-    {% if not request.user.is_authenticated %}
-        $(document).ready(function() {
-            $(this).bind('appstore.app.require_env', function(e) {
-                location.href = '{% url login %}?next=' + $(e.target).data('appstoreAppUrl');
-            });
-        });
-    {% endif %}
-</script>
 {% endblock %}
