@@ -3,6 +3,8 @@
 {% block content %}
     {% block body %}
     {% endblock %}
+    {% block extra_body %}
+    {% endblock %}
 {% endblock %}
 
 {% block extrahead %}
@@ -11,5 +13,14 @@
     $(document).bind('appstore.app.action', function(e, btn) {
         location.reload();
     });
+
+
+    {% if not request.user.is_authenticated %}
+        $(document).ready(function() {
+            $(this).bind('appstore.app.require_env', function(e) {
+                location.href = '{% url login %}?next=' + $(e.target).data('appstoreAppUrl');
+            });
+        });
+    {% endif %}
 </script>
 {% endblock %}
