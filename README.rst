@@ -30,7 +30,7 @@ Install
   ``syncdb`` or ``migrate``,
 - include urls by adding ``url(r'appstore/', include('appstore.urls'))`` to
   ``urls.py``,
-- install 'appstore.middleware.EnvironmentMiddleware' to begin with, you might
+- install ``appstore.middleware.EnvironmentMiddleware`` to begin with, you might
   want to replace it with your own implementation later though,
 - install templates by overriding ``appstore/base.html`` to customize the
   parent template and blocks,
@@ -86,7 +86,7 @@ Javascript signals
 ``````````````````
 
 You can see an example implementation of javascript slots in
-test_project/templates/site_base.html.
+``test_project/templates/site_base.html``.
 
 ``appstore.app.action``
     Triggered when an app is installed or uninstalled successfully.
