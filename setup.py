@@ -46,6 +46,7 @@ setup(
     keywords='django appstore',
     install_requires=[
         'django',
+        'django-mptt',
         'django-taggit',
         'mock-django',
         'pil',
