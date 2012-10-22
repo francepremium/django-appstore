@@ -4,7 +4,8 @@ from django import http
 from taggit.models import Tag
 
 from models import AppCategory, App
-from exceptions import AppAlreadyInstalled, AppVersionNotInstalled, CannotUninstallDependency
+from exceptions import (AppAlreadyInstalled, AppVersionNotInstalled,
+        CannotUninstallDependency)
 
 
 class AppCategoryListView(generic.ListView):
@@ -23,7 +24,8 @@ class AppCategoryDetailView(generic.DetailView):
             **kwargs)
 
         context['appcategory_list'] = AppCategory.objects.all()
-        context['app_list'] = context['object'].app_set.filter(in_appstore=True)
+        context['app_list'] = context['object'].app_set.filter(
+            in_appstore=True)
         context['tag_list'] = Tag.objects.filter(
             app__in=context['app_list']).distinct()
 

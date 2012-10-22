@@ -4,7 +4,8 @@ from django.core.urlresolvers import reverse
 from taggit.managers import TaggableManager
 
 from signals import post_app_install, post_app_uninstall
-from exceptions import AppAlreadyInstalled, AppVersionNotInstalled, CannotUninstallDependency
+from exceptions import (AppAlreadyInstalled, AppVersionNotInstalled,
+        CannotUninstallDependency)
 
 
 class AppCategory(models.Model):
