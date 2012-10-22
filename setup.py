@@ -22,6 +22,7 @@ setup(
         'django',
         'django-taggit',
         'mock-django',
+        'pil',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
