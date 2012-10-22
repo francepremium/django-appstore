@@ -1,7 +1,12 @@
 django-appstore
 ===============
 
-Status: beta software.
+Status: alpha software. 
+
+Intended audience: experienced django web developers, the installation
+procedure contains many steps to fail and require a lot of care. **Or** newbies
+with time and motivation to learn about django app reusability and best
+practices.
 
 Features
 --------
