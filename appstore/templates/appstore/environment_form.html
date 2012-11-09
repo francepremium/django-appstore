@@ -1,0 +1,19 @@
+{% extends 'appstore/base.html' %}
+
+{% load i18n %}
+{% load url from future %}
+{% load bootstrap_tags %}
+
+{% block body %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form|as_bootstrap }}
+        <button type="submit" class="btn">{% trans 'Submit' %}</button>
+    </form>
+
+    <table>
+        {% for appversion in object.appversions.select_related %}
+            {% include 'appstore/_app_row.html' with app=appversion.app env=object %}
+        {% endfor %}
+    </table>
+{% endblock %}

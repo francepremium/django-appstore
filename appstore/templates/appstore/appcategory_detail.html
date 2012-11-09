@@ -35,22 +35,7 @@
 
 <table style="display: inline-block">
     {% for app in app_list %}
-    <tr>
-        <td>
-            <img src="{{ app.image.url }}" />
-        </td>
-        <th>
-            <a href="{{ app.get_absolute_url }}" 
-                title="{% trans 'View' %} {{ app }}"
-                >{{ app }}</a>
-        </th>
-        <td>
-            {{ app.description }}
-        </td>
-        <td>
-            {% include 'appstore/_app_install_button.html' %}
-        </td>
-    </tr>
+        {% include 'appstore/_app_row.html' with env=request.session.appstore_environment %}
     {% endfor %}
 </table>
 {% endblock %}

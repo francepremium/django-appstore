@@ -148,3 +148,10 @@ class Environment(models.Model):
 
         self.appversions.remove(appversion)
         return post_app_uninstall.send(sender=self, appversion=appversion)
+
+    def fork_app(self, app, author):
+        source_appversion = self.appversions.get(app=app)
+        fork_appversion = source_appversion.fork(author)
+        self.install_appversion(fork_appversion)
+        self.uninstall_appversion(source_appversion)
+        return fork_appversion

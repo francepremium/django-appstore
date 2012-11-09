@@ -3,9 +3,17 @@ from django import http
 
 from taggit.models import Tag
 
-from models import AppCategory, App
+from forms import EnvironmentForm
+from models import Environment, AppCategory, App
 from exceptions import (AppAlreadyInstalled, AppVersionNotInstalled,
         CannotUninstallDependency)
+
+
+class EnvUpdateView(generic.UpdateView):
+    form = EnvironmentForm
+
+    def get_queryset(self):
+        return Environment.objects.filter(users=self.request.user)
 
 
 class AppCategoryListView(generic.ListView):
@@ -50,9 +58,7 @@ class AppDetailView(generic.DetailView):
                 elif request.POST.get('action', None) == 'uninstall':
                     result = environment.uninstall_app(app)
                 elif request.POST.get('action', None) == 'fork':
-                    fork = app.fork(request.user)
-                    result = environment.install_app(fork)
-                    environment.uninstall_app(app)
+                    result = environment.fork_app(app, request.user)
                 else:
                     return http.HttpResponseBadRequest('Unknon action')
             except AppAlreadyInstalled:
