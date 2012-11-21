@@ -1,0 +1,15 @@
+{% extends 'appstore/app_base.html' %}
+
+{% load i18n %}
+{% load url from future %}
+
+{% block body %}
+<form action="" method="post">
+    {% csrf_token %}
+    <p>{% trans 'Deploying the app will make it available in the environment' %}.</p>
+    <p>{% trans 'Until this version is deployed, the previous version is used in the environment' %}.</p>
+    <p>{% trans 'Old versions are always kept so you do not have to worry about your data' %}.</p>
+    <p>{% trans 'Data that was made with an earlier version will still open with the earlier version until you migrate it' %}.</p>
+    <button class="btn primary">{% trans 'Deploy' %}</button>
+</form>
+{% endblock %}

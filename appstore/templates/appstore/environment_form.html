@@ -12,8 +12,17 @@
     </form>
 
     <table>
-        {% for appversion in object.appversions.select_related %}
-            {% include 'appstore/_app_row.html' with app=appversion.app env=object %}
+        {% for app in object.apps.all %}
+        <tr>
+            <td>{{ app.name }}</td>
+            <td>{{ app.description }}</td>
+            <td>{% if app.deployed %}{% trans 'Deployed' %}{% else %}{% trans 'Not deployed' %}{% endif %}</td>
+            <td>
+                {% include 'appstore/_app_install_button.html' with env=object %}
+            </td>
+        </tr>
         {% endfor %}
     </table>
+
+    <a href="{% url 'appstore_app_create' %}">{% trans 'Create app' %}</a>
 {% endblock %}

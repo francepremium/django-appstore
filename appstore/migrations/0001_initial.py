@@ -13,12 +13,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=100)),
             ('description', self.gf('django.db.models.fields.TextField')()),
-            ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=100)),
-            ('parent', self.gf('mptt.fields.TreeForeignKey')(blank=True, related_name='children', null=True, to=orm['appstore.AppCategory'])),
-            ('lft', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
-            ('rght', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
-            ('tree_id', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
-            ('level', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
+            ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal('appstore', ['AppCategory'])
 
@@ -32,34 +27,26 @@ class Migration(SchemaMigration):
         # Adding model 'App'
         db.create_table('appstore_app', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['appstore.AppCategory'])),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('description', self.gf('django.db.models.fields.TextField')()),
             ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=100)),
-            ('provides', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['appstore.AppFeature'])),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['appstore.AppCategory'], null=True, blank=True)),
+            ('in_appstore', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('provides', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='provided_by', null=True, to=orm['appstore.AppFeature'])),
             ('default_for_feature', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('fork_of', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='fork_set', null=True, to=orm['appstore.App'])),
+            ('superseeds', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='forks', null=True, to=orm['appstore.App'])),
+            ('deployed', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('editor', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal('appstore', ['App'])
 
-        # Adding model 'AppVersion'
-        db.create_table('appstore_appversion', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['appstore.App'])),
-            ('version', self.gf('django.db.models.fields.IntegerField')()),
-            ('public', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('author', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('fork_of', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='fork_set', null=True, to=orm['appstore.AppVersion'])),
-        ))
-        db.send_create_signal('appstore', ['AppVersion'])
-
-        # Adding M2M table for field requires on 'AppVersion'
-        db.create_table('appstore_appversion_requires', (
+        # Adding M2M table for field requires on 'App'
+        db.create_table('appstore_app_requires', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('appversion', models.ForeignKey(orm['appstore.appversion'], null=False)),
+            ('app', models.ForeignKey(orm['appstore.app'], null=False)),
             ('appfeature', models.ForeignKey(orm['appstore.appfeature'], null=False))
         ))
-        db.create_unique('appstore_appversion_requires', ['appversion_id', 'appfeature_id'])
+        db.create_unique('appstore_app_requires', ['app_id', 'appfeature_id'])
 
         # Adding model 'Environment'
         db.create_table('appstore_environment', (
@@ -68,13 +55,13 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('appstore', ['Environment'])
 
-        # Adding M2M table for field appversions on 'Environment'
-        db.create_table('appstore_environment_appversions', (
+        # Adding M2M table for field apps on 'Environment'
+        db.create_table('appstore_environment_apps', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('environment', models.ForeignKey(orm['appstore.environment'], null=False)),
-            ('appversion', models.ForeignKey(orm['appstore.appversion'], null=False))
+            ('app', models.ForeignKey(orm['appstore.app'], null=False))
         ))
-        db.create_unique('appstore_environment_appversions', ['environment_id', 'appversion_id'])
+        db.create_unique('appstore_environment_apps', ['environment_id', 'app_id'])
 
         # Adding M2M table for field users on 'Environment'
         db.create_table('appstore_environment_users', (
@@ -95,17 +82,14 @@ class Migration(SchemaMigration):
         # Deleting model 'App'
         db.delete_table('appstore_app')
 
-        # Deleting model 'AppVersion'
-        db.delete_table('appstore_appversion')
-
-        # Removing M2M table for field requires on 'AppVersion'
-        db.delete_table('appstore_appversion_requires')
+        # Removing M2M table for field requires on 'App'
+        db.delete_table('appstore_app_requires')
 
         # Deleting model 'Environment'
         db.delete_table('appstore_environment')
 
-        # Removing M2M table for field appversions on 'Environment'
-        db.delete_table('appstore_environment_appversions')
+        # Removing M2M table for field apps on 'Environment'
+        db.delete_table('appstore_environment_apps')
 
         # Removing M2M table for field users on 'Environment'
         db.delete_table('appstore_environment_users')
@@ -114,45 +98,34 @@ class Migration(SchemaMigration):
     models = {
         'appstore.app': {
             'Meta': {'ordering': "('name',)", 'object_name': 'App'},
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['appstore.AppCategory']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['appstore.AppCategory']", 'null': 'True', 'blank': 'True'}),
             'default_for_feature': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'deployed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'description': ('django.db.models.fields.TextField', [], {}),
-            'fork_of': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'fork_set'", 'null': 'True', 'to': "orm['appstore.App']"}),
+            'editor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'superseeds': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'forks'", 'null': 'True', 'to': "orm['appstore.App']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
+            'in_appstore': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'provides': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['appstore.AppFeature']"})
+            'provides': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'provided_by'", 'null': 'True', 'to': "orm['appstore.AppFeature']"}),
+            'requires': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'required_by'", 'blank': 'True', 'to': "orm['appstore.AppFeature']"})
         },
         'appstore.appcategory': {
             'Meta': {'ordering': "('name',)", 'object_name': 'AppCategory'},
             'description': ('django.db.models.fields.TextField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
-            'level': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
-            'lft': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
-            'parent': ('mptt.fields.TreeForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': "orm['appstore.AppCategory']"}),
-            'rght': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
-            'tree_id': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'})
+            'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'})
         },
         'appstore.appfeature': {
             'Meta': {'ordering': "('name',)", 'object_name': 'AppFeature'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'})
         },
-        'appstore.appversion': {
-            'Meta': {'ordering': "('app', 'version')", 'object_name': 'AppVersion'},
-            'app': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['appstore.App']"}),
-            'author': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'fork_of': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'fork_set'", 'null': 'True', 'to': "orm['appstore.AppVersion']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'public': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'requires': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['appstore.AppFeature']", 'symmetrical': 'False', 'blank': 'True'}),
-            'version': ('django.db.models.fields.IntegerField', [], {})
-        },
         'appstore.environment': {
             'Meta': {'ordering': "('name',)", 'object_name': 'Environment'},
-            'appversions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['appstore.AppVersion']", 'symmetrical': 'False'}),
+            'apps': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['appstore.App']", 'symmetrical': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.User']", 'symmetrical': 'False'})
@@ -192,6 +165,19 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        'taggit.tag': {
+            'Meta': {'object_name': 'Tag'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '100'})
+        },
+        'taggit.taggeditem': {
+            'Meta': {'object_name': 'TaggedItem'},
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taggit_taggeditem_tagged_items'", 'to': "orm['contenttypes.ContentType']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'object_id': ('django.db.models.fields.IntegerField', [], {'db_index': 'True'}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taggit_taggeditem_items'", 'to': "orm['taggit.Tag']"})
         }
     }
 

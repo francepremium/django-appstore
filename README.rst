@@ -3,12 +3,10 @@
 django-appstore
 ===============
 
-Status: alpha software. 
+Status: alpha / research software, subject to full rewrite for version 1.0.
 
 Intended audience: experienced django web developers, the installation
-procedure contains many steps to fail and require a lot of care. **Or** newbies
-with time and motivation to learn about django app reusability and best
-practices.
+procedure contains many steps to fail and require a lot of care.
 
 Features
 --------
@@ -19,7 +17,7 @@ brilliant ``virtualenv``.
 
 It is left to the user of this app to connect post_app_install and
 post_app_uninstall, because this app is just a helper to make your own app
-system. It is actually made for our specific needs so you might prefer to fork
+system. It is actually made for our specific needs so you might prefer to edit
 it rather than to try to use it as-is.
 
 Templates and staticfiles use twitter bootstrap and jQuery.
@@ -46,34 +44,18 @@ Install
 Documentation / design
 ----------------------
 
-Views & urls
-````````````
-
-appstore_appcategory_list
-    Use AppCategoryList.
-
-appstore_appcategory_detail
-    Use AppCategoryDetail.
-
-appstore_app_details
-    Used as modal to describe an app, also receives an action such as 'install'
-    or 'uninstall' as post.
-
-
 Models
 ``````
 
 - App model represents an app,
 - AppFeature has just a name, and represents a feature of an App in
-  App.provides,
+  App.provides, or a feature that an App requires in App.requires,
 - AppCategory model allows to sort App by category in AppCategoryView,
-- AppVersion model represents a version of an App, relates to AppFeature in
-  AppVersion.requires,
-- Environment model keeps track of installed apps and versions,
+- Environment model keeps track of installed apps,
 
 App and AppCategory are dumb models used to build a catchy Chrome App
-Store-like frontend. AppVersion and Environment are used to build the Pythonic
-package management backend.
+Store-like frontend. App, AppFeature and Environment are used to build the
+Pythonic package management backend.
 
 Python Signals
 ``````````````
@@ -99,3 +81,8 @@ You can see an example implementation of javascript slots in
 ``appstore.app.require_env``
     Triggered when the user clicked to install an app, but has no environment
     selected in his sesession, ie. not authenticated.
+
+Editable apps
+`````````````
+
+

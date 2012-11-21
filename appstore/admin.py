@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import AppFeature, AppCategory, App, AppVersion, Environment
+from models import AppFeature, AppCategory, App, Environment
 
 
 class AppCategoryAdmin(admin.ModelAdmin):
@@ -15,16 +15,10 @@ admin.site.register(AppFeature, AppFeatureAdmin)
 
 class AppAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'provides', 'image',
-            'default_for_feature', 'fork_of', 'in_appstore')
+            'default_for_feature', 'in_appstore', 'editor')
     list_editable = ('category', 'provides',
-            'default_for_feature', 'in_appstore')
+            'default_for_feature', 'in_appstore', 'editor')
 admin.site.register(App, AppAdmin)
-
-
-class AppVersionAdmin(admin.ModelAdmin):
-    list_display = ('app', 'version', 'fork_of',
-        'author')
-admin.site.register(AppVersion, AppVersionAdmin)
 
 
 class EnvironmentAdmin(admin.ModelAdmin):

@@ -1,0 +1,12 @@
+{% extends 'appstore/app_base.html' %}
+
+{% load bootstrap_tags i18n %}
+
+{% block body %}
+{{ block.super }}
+<form enctype="multipart/form-data" action="" method="POST">
+    {% csrf_token %}
+    {{ form|as_bootstrap }}
+    <button type="submit" class="btn">{% trans 'Save' %}</button>
+</form>
+{% endblock %}

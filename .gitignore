@@ -1,2 +1,3 @@
-zodb_relations.egg-info/
+appstore/.ropeproject/
 *pyc
+*swp

@@ -1,20 +1,26 @@
 from django.db import models
+from django.db.models import signals
 from django.core.urlresolvers import reverse
 
 from taggit.managers import TaggableManager
 
-from signals import post_app_install, post_app_uninstall
-from exceptions import (AppAlreadyInstalled, AppVersionNotInstalled,
+from settings import EDITOR_MODULES
+from signals import post_app_install, post_app_uninstall, post_app_edit
+from exceptions import (AppAlreadyInstalled, AppNotInstalled,
         CannotUninstallDependency)
 
 
 class AppCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
-    image = models.ImageField(upload_to='appstore/appcategory/logo')
+    image = models.ImageField(null=True, blank=True,
+            upload_to='appstore/appcategory/logo')
 
     def __unicode__(self):
         return self.name
+
+    def get_absolute_update_url(self):
+        return reverse('appstore_appcategory_update', args=(self.pk,))
 
     def get_absolute_url(self):
         name = self.name.replace('/', '--')
@@ -27,6 +33,13 @@ class AppCategory(models.Model):
 class AppFeature(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
+    def get_absolute_update_url(self):
+        return reverse('appstore_appfeature_update', args=(self.pk,))
+
+    @property
+    def default_app(self):
+        return self.provided_by.get(default_for_feature=True)
+
     def __unicode__(self):
         return self.name
 
@@ -35,20 +48,36 @@ class AppFeature(models.Model):
 
 
 class App(models.Model):
-    category = models.ForeignKey(AppCategory)
+    # Cosmetics
     name = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(upload_to='appstore/app/image')
-    provides = models.ForeignKey(AppFeature)
-    default_for_feature = models.BooleanField()
-    in_appstore = models.BooleanField()
-    fork_of = models.ForeignKey('self', related_name='fork_set',
-            null=True, blank=True)
+    category = models.ForeignKey(AppCategory, null=True, blank=True)
     tags = TaggableManager(blank=True)
+    in_appstore = models.BooleanField()
+
+    provides = models.ForeignKey(AppFeature, null=True, blank=True,
+        related_name='provided_by')
+    requires = models.ManyToManyField(AppFeature, blank=True,
+        related_name='required_by')
+    default_for_feature = models.BooleanField()
+
+    superseeds = models.ForeignKey('self', related_name='forks', null=True,
+        blank=True)
+    deployed = models.BooleanField()
+
+    editor = models.CharField(null=True, blank=True, choices=EDITOR_MODULES,
+        max_length=100)
 
     @property
-    def last_appversion(self):
-        return self.appversion_set.order_by('-version')[0]
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return ''
+
+    @property
+    def editor_module_name(self):
+        return self.editor.split('.')[-1]
 
     def get_absolute_url(self):
         return reverse('appstore_app_detail', args=[self.pk])
@@ -60,42 +89,44 @@ class App(models.Model):
         ordering = ('name',)
 
 
-class AppVersion(models.Model):
-    app = models.ForeignKey(App)
-    version = models.IntegerField()
-    requires = models.ManyToManyField(AppFeature, blank=True)
-    author = models.ForeignKey('auth.user')
-    fork_of = models.ForeignKey('self', related_name='fork_set',
-            null=True, blank=True)
+def deploy_superseeds_mark_dirty(sender, instance, **kwargs):
+    """
+    Check if .deployed changed, if so, set instance._deploying = True.
 
-    def __unicode__(self):
-        return u'%s v%s' % (self.app, self.version)
+    This will be picked up by deploy_superseeds_apply.
+    """
+    if not instance.pk:
+        return
 
-    class Meta:
-        ordering = ('app', 'version')
+    if not instance.deployed:
+        return
 
-    def get_required_by(self, env):
-        return env.appversions.exclude(pk=self.pk).filter(
-            requires=self.app.provides)
+    if not App.objects.get(pk=instance.pk).deployed:
+        instance._deploying = True
+signals.pre_save.connect(deploy_superseeds_mark_dirty, sender=App)
 
-    def fork(self, author):
-        app_fork = App(category=self.app.category, name=self.app.name,
-                description=self.app.description, image=self.app.image,
-                provides=self.app.provides, fork_of=self.app)
-        app_fork.save()
-        appversion_fork = AppVersion(app=app_fork, version=self.version,
-                fork_of=self, author=author)
-        appversion_fork.save()
 
-        for appfeature in self.requires.all():
-            appversion_fork.requires.add(appfeature)
+def deploy_superseeds_apply(sender, instance, created, **kwargs):
+    """
+    Deploying an app superseeds the app it is based on, if any.
 
-        return appversion_fork
+    If a user edits App "foo", then App "foo" should remain installed until the
+    edit is deployed.
+
+    When the edit is deployed, it's parent can be uninstalled.
+    """
+    if created:
+        return
+
+    if getattr(instance, '_deploying', False):
+        for environment in instance.environment_set.all():
+            environment.uninstall(instance.superseeds)
+signals.post_save.connect(deploy_superseeds_apply, sender=App)
 
 
 class Environment(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    appversions = models.ManyToManyField(AppVersion)
+    apps = models.ManyToManyField('appstore.app')
     users = models.ManyToManyField('auth.user')
 
     def __unicode__(self):
@@ -104,54 +135,56 @@ class Environment(models.Model):
     class Meta:
         ordering = ('name',)
 
-    @property
-    def installed_apps(self):
-        return App.objects.filter(appversion__in=self.appversions.all())
+    def install(self, app):
+        if app in self.apps.all():
+            raise AppAlreadyInstalled(self, app)
 
-    @property
-    def appfeatures(self):
-        return AppFeature.objects.filter(app__in=self.installed_apps)
+        # install the default app for each feature, if another installed app
+        # doesn't already provide it
+        for feature in app.requires.exclude(provided_by__in=self.apps.all()):
+            self.install(feature.default_app)
 
-    def install_app(self, app):
-        appversion = app.last_appversion
-        self.install_appversion(appversion)
-        return appversion
+        self.apps.add(app)
+        post_app_install.send(sender=self, app=app)
 
-    def install_appversion(self, appversion):
-        if appversion.app in self.installed_apps:
-            raise AppAlreadyInstalled(self, appversion)
+    def uninstall(self, app):
+        if app not in self.apps.all():
+            raise AppNotInstalled(self, app)
 
-        for appfeature in appversion.requires.all():
-            if appfeature in self.appfeatures:
-                continue
+        # are there any other apps that provide the same feature ?
+        has_alternative = AppFeature.objects.filter(pk=app.provides.pk,
+            provided_by__in=self.apps.exclude(pk=app.pk))
 
-            requirement = App.objects.get(default_for_feature=True,
-                provides=appfeature)
-            self.install_app(requirement)
+        # if no other app provides the same feature as app
+        if not has_alternative:
+            # check if that feature is necessary
+            requirements = AppFeature.objects.filter(
+                required_by=self.apps.exclude(pk=app.pk))
 
-        self.appversions.add(appversion)
-        return post_app_install.send(sender=self, appversion=appversion)
+            if app.provides in requirements:
+                # in that case find what apps require it, and fail
+                blockers = self.apps.filter(requires=app.provides)
+                raise CannotUninstallDependency(self, app, blockers)
 
-    def uninstall_app(self, app):
-        appversion = self.appversions.get(app=app)
-        self.uninstall_appversion(appversion)
-        return appversion
+        self.apps.remove(app)
+        post_app_uninstall.send(sender=self, app=app)
 
-    def uninstall_appversion(self, appversion):
-        required_by = appversion.get_required_by(self)
-        if required_by:
-            raise CannotUninstallDependency(self, appversion,
-                required_by[0])
+    def edit(self, app):
+        new_app = App.objects.create(
+            name=app.name,
+            description=app.description,
+            image=app.image,
+            category=app.category,
+            provides=app.provides,
+            editor=app.editor,
+            superseeds=app,
+        )
 
-        if appversion not in self.appversions.all():
-            raise AppVersionNotInstalled(self, appversion)
+        for requirement in app.requires.all():
+            new_app.requires.add(requirement)
 
-        self.appversions.remove(appversion)
-        return post_app_uninstall.send(sender=self, appversion=appversion)
+        self.install(new_app)
 
-    def fork_app(self, app, author):
-        source_appversion = self.appversions.get(app=app)
-        fork_appversion = source_appversion.fork(author)
-        self.install_appversion(fork_appversion)
-        self.uninstall_appversion(source_appversion)
-        return fork_appversion
+        post_app_edit.send(sender=self, app=new_app)
+
+        return new_app

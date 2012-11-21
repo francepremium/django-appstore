@@ -1,0 +1,27 @@
+{% load i18n %}
+
+{% if appversion in env.appversions.all %}
+
+<a href="#edit_{{ appversion.app|slugify }}" style="{% if appversion.author == request.user %}display:none{% endif %}" role="button" class="btn edit" data-toggle="modal">{% trans 'Fork' %}</a>
+
+<div class="modal" id="edit_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>{% trans 'Fork' %} {{ app }}</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            {% trans 'Are you sure you want to edit' %}
+            {{ app }}
+            {% trans 'into environment' %}
+            {{ env }}
+            ?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="edit" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Fork' %}</button>
+    </div>
+</div>
+
+{% endif %}

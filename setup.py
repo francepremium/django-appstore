@@ -47,7 +47,9 @@ setup(
     install_requires=[
         'django',
         'django-mptt',
+        'django-autocomplete-light',
         'django-taggit',
+        'django-bootstrap-tags',
         'mock-django',
         'pil',
     ],

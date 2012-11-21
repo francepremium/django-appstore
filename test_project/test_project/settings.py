@@ -12,16 +12,17 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+FIXTURE_DIRS = [
+    os.path.join(PROJECT_ROOT, 'fixtures'),
+]
+
 MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'db.sqlite',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'TEST_NAME': ':memory:'
     }
 }
 
@@ -102,13 +103,16 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'appstore.middleware.EnvironmentMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+INTERNAL_IPS = ('127.0.0.1',)
 
 TEMPLATE_CONTEXT_PROCESSORS = ('django.contrib.auth.context_processors.auth',
+ "django.core.context_processors.debug",
  'django.core.context_processors.debug',
  'django.core.context_processors.i18n',
  'django.core.context_processors.media',
@@ -119,8 +123,9 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.contrib.auth.context_processors.auth',
 
 ROOT_URLCONF = 'test_project.urls'
 
-LOGIN_URL='/admin/'
-LOGOUT_URL='/admin/logout/'
+LOGIN_REDIRECT_URL='/appstore/'
+LOGIN_URL='/auth/login/'
+LOGOUT_URL='/auth/logout/'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'test_project.wsgi.application'
@@ -143,11 +148,22 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     'appstore',
+    'appstore.contrib.form_designer_appeditor',
+    'appstore.contrib.dummy_appeditor',
+    'form_designer',
+    'django_forms_bootstrap',
+    'autocomplete_light',
     'mock_django',
     'south',
     'taggit',
+    'debug_toolbar',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+)
+
+APPSTORE_EDITOR_MODULES = (
+    ('appstore.contrib.dummy_appeditor', u'Dummy app'),
+    ('appstore.contrib.form_designer_appeditor', u'Form app'),
 )
 
 SESSION_SECURITY_EXPIRE_AFTER=10

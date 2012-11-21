@@ -1,39 +1,87 @@
+from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 from django.views import generic
 from django import http
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.conf import settings
+from django.contrib import messages
 
 from taggit.models import Tag
 
-from forms import EnvironmentForm
+from forms import EnvironmentForm, AppForm
 from models import Environment, AppCategory, App
-from exceptions import (AppAlreadyInstalled, AppVersionNotInstalled,
-        CannotUninstallDependency)
+from exceptions import CannotUninstallDependency, AppAlreadyInstalled
 
 
-class EnvUpdateView(generic.UpdateView):
-    form = EnvironmentForm
+class LoginRequiredMixin(object):
+    """
+    Mixin that decorates dispatch with login_required.
+    """
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
+
+
+class EnvUpdateView(LoginRequiredMixin, generic.UpdateView):
+    """
+    Update the environment.
+    """
+    form_class = EnvironmentForm
 
     def get_queryset(self):
-        return Environment.objects.filter(users=self.request.user)
+        """
+        Staff users can edit any environment, other users may only edit their
+        own environment (for now).
+        """
+        if self.request.user.is_staff:
+            return Environment.objects.all()
+        else:
+            return Environment.objects.filter(users=self.request.user)
+
+    def get_success_url(self):
+        """
+        Back to the form again, but also reset the env cached in the session.
+        """
+        self.request.session['appstore_environment'] = self.object
+        return self.request.path
 
 
 class AppCategoryListView(generic.ListView):
+    """
+    List categories.
+    """
     model = AppCategory
 
 
 class AppCategoryDetailView(generic.DetailView):
+    """
+    List apps, filterable by tags, of a category.
+
+    Also provide a list of categories for navigational purposes.
+    """
     model = AppCategory
 
     def get_object(self, queryset=None):
+        """
+        Replace double dashes by a slash in the appcategory url kwarg.
+        """
         return self.get_queryset().get(
             name=self.kwargs['appcategory'].replace('--', '/'))
 
     def get_context_data(self, **kwargs):
+        """
+        Add app_list, tag_list and appcategory_list to the context.
+        """
         context = super(AppCategoryDetailView, self).get_context_data(
             **kwargs)
 
         context['appcategory_list'] = AppCategory.objects.all()
+
         context['app_list'] = context['object'].app_set.filter(
             in_appstore=True)
+
         context['tag_list'] = Tag.objects.filter(
             app__in=context['app_list']).distinct()
 
@@ -45,22 +93,31 @@ class AppCategoryDetailView(generic.DetailView):
 
 
 class AppDetailView(generic.DetailView):
+    """
+    Display details of an app on GET, take actions on the current env on post.
+    """
     model = App
 
     def post(self, request, *args, **kwargs):
+        """
+        Take action with an app on the current environment on POST request.
+
+        Supported actions are: 'install' and 'uninstall'.
+
+        This is ment to be accessed via ajax. Respond with 201 on success, 400
+        on failure.
+        """
         environment = request.session['appstore_environment']
         app = self.get_object()
 
         if request.user in environment.users.all():
             try:
                 if request.POST.get('action', None) == 'install':
-                    result = environment.install_app(app)
+                    environment.install(app)
                 elif request.POST.get('action', None) == 'uninstall':
-                    result = environment.uninstall_app(app)
-                elif request.POST.get('action', None) == 'fork':
-                    result = environment.fork_app(app, request.user)
+                    environment.uninstall(app)
                 else:
-                    return http.HttpResponseBadRequest('Unknon action')
+                    return http.HttpResponseBadRequest('Unknown action')
             except AppAlreadyInstalled:
                 return http.HttpResponseBadRequest('App already installed')
             except CannotUninstallDependency:
@@ -70,3 +127,77 @@ class AppDetailView(generic.DetailView):
             return http.HttpResponse(status=201)
         else:
             return http.HttpResponseForbidden('Not an admin for this env')
+
+
+class AppCreateView(LoginRequiredMixin, generic.CreateView):
+    """
+    Create an App using AppForm.
+    """
+    model = App
+    form_class = AppForm
+
+    def form_valid(self):
+        """
+        Install the newly created App in the current environment.
+        """
+        result = super(AppCreateView, self).form_valid()
+        self.request.session['appstore_environment'].install(self.object)
+        return result
+
+    def get_success_url(self):
+        """
+        Return the url to update the app.
+        """
+        return reverse('appstore_app_update', args=(self.object.pk,))
+
+
+class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
+    """
+    Update an app.
+
+    Note that the template extends ``appstore/app_base.html``, which checks
+    App.editor. If App.editor is ``appstore.contrib.dummy_appeditor``, then it
+    will include ``dummy_appeditor/links.html``.
+
+    It is the role of the appeditor to provide actual functionnality.
+    """
+    model = App
+    form_class = AppForm
+    context_object_name = 'app'
+
+    def get_object(self):
+        """
+        If the app is already deployed: edit it, and return the edit.
+        """
+        original = super(AppUpdateView, self).get_object()
+
+        if not original.deployed:
+            return original
+
+        obj = self.request.session['appstore_environment'].edit(original)
+
+        return obj
+
+
+class AppDeployView(LoginRequiredMixin, generic.DetailView):
+    """
+    Deploy an App, to make it actually usable.
+    """
+    model = App
+    template_name = 'appstore/app_deploy.html'
+
+    def post(self, *args, **kwargs):
+        """
+        Set app.deployed=True and redirect to environment configuration url.
+        """
+        self.object = self.get_object()
+
+        self.object.deployed = True
+        self.object.save()
+
+        if 'django.contrib.messages' in settings.INSTALLED_APPS:
+            messages.add_message(self.request, messages.SUCCESS,
+                _(u'App successfully deployed.'))
+
+        return http.HttpResponseRedirect(reverse('appstore_env_update',
+            args=[self.request.session['appstore_environment'].pk]))

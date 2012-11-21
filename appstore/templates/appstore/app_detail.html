@@ -16,11 +16,9 @@
     {% endfor %}
 {% endif %}
 
-{% with app=object %}
-    {% include 'appstore/_app_install_button.html' %}
-{% endwith %}
+{% include 'appstore/_app_install_button.html' with app=object env=request.session.appstore_environment %}
 
-<img src="{{ object.image.url }}" />
+<img src="{{ object.image_url }}" />
 
 <p>{{ object.description }}</p>
 {% endblock %}
