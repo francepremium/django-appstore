@@ -17,6 +17,7 @@
             <td>{{ app.name }}</td>
             <td>{{ app.description }}</td>
             <td>{% if app.deployed %}{% trans 'Deployed' %}{% else %}{% trans 'Not deployed' %}{% endif %}</td>
+            <td>{% if app.superseeds and not app.deployed %}{% trans 'Superseeds' %}{% endif %}</td>
             <td>
                 {% include 'appstore/_app_install_button.html' with env=object %}
             </td>

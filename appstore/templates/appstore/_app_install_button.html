@@ -1,8 +1,9 @@
 {% load i18n %}
+{% load url from future %}
 
-<a href="#uninstall_{{ app|slugify }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
+<a href="#uninstall_{{ app.pk }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
 
-<div class="modal" id="uninstall_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
+<div class="modal" id="uninstall_{{ app.pk }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>{% trans 'Uninstall' %} {{ app }}</h3>
@@ -18,13 +19,13 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="uninstall" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Uninstall' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="uninstall" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Uninstall' %}</button>
     </div>
 </div>
 
-<a href="#newVersion_{{ app|slugify }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn newVersion" data-toggle="modal">{% trans 'New version' %}</a>
+<a href="#newVersion_{{ app.pk }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn newVersion" data-toggle="modal">{% trans 'New version' %}</a>
 
-<div class="modal" id="newVersion_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
+<div class="modal" id="newVersion_{{ app.pk }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>{% trans 'Edit' %} {{ app }}</h3>
@@ -37,14 +38,18 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="uninstall" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'No, just copy' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="update" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'No, just copy' %}</button>
     </div>
 </div>
 
-<a href="#install_{{ app|slugify }}" style="{% if app in env.apps.all %}display:none{% endif %}" role="button" class="btn install" data-toggle="modal">{% trans 'Install' %}</a>
+{% if app in env.apps.all and not app.deployed %}
+    <a href="{% url 'appstore_app_update' app.pk %}" role="button" class="btn">{% trans 'Update' %}</a>
+{% endif %}
 
-<div class="modal hidden" id="install_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
+<a href="#install_{{ app.pk }}" style="{% if app in env.apps.all %}display:none{% endif %}" role="button" class="btn install" data-toggle="modal">{% trans 'Install' %}</a>
+
+<div class="modal hidden" id="install_{{ app.pk }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>{% trans 'Install' %} {{ app }}</h3>
@@ -60,6 +65,6 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
-        <button data-appstore-app-slug="{{ app|slugify }}" class="btn btn-primary" data-appstore-app-action="install" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Install' %}</button>
+        <button data-appstore-app-slug="{{ app.pk }}" class="btn btn-primary" data-appstore-app-action="install" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Install' %}</button>
     </div>
 </div>
