@@ -130,12 +130,8 @@ class AppDetailView(generic.DetailView):
                 if action in ('copy', 'update'):
                     return Http.HttpResponseRedirect(reverse(
                         'appstore_app_update', args=(new_app.pk,)))
-
-            except AppAlreadyInstalled:
-                return http.HttpResponseBadRequest('App already installed')
-            except CannotUninstallDependency:
-                return http.HttpResponseBadRequest(
-                    'Cannot uninstall dependency')
+            except AppstoreException as e:
+                return http.HttpResponseBadRequest(e.message)
 
             return http.HttpResponse(status=201)
         else:
