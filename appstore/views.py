@@ -123,7 +123,7 @@ class AppDetailView(generic.DetailView):
                 elif action == 'copy':
                     new_app = environment.copy(app)
                 elif action == 'update':
-                    new_app = environment.copy(app)
+                    new_app = environment.copy(app, True)
                 else:
                     return http.HttpResponseBadRequest('Unknown action')
 
