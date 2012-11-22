@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load url from future %}
+{% load appstore_tags %}
 
 <a href="#uninstall_{{ app.pk }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
 
@@ -31,15 +32,23 @@
         <h3>{% trans 'Edit' %} {{ app }}</h3>
     </div>
     <div class="modal-body">
+        {% if app|update_blocker:env %}
+        <p>
+            {% trans 'You already have an update in progress for this app. Do you want to make a plain copy ?' %}
+        </p>
+        {% else %}
         <p>
             {% trans 'Should the new version, once deployed, obsolete this one in this environment' %}
             ?
         </p>
+        {% endif %}
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="update" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'No, just copy' %}</button>
+        {% if not app|update_blocker:env %}
+            <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="update" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
+        {% endif %}
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% if app|update_blocker:env %}{% trans 'Yes, just copy' %}{% else %}{% trans 'No, just copy' %}{% endif %}</button>
     </div>
 </div>
 

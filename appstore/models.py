@@ -178,10 +178,13 @@ class Environment(models.Model):
         self.apps.remove(app)
         post_app_uninstall.send(sender=self, app=app)
 
+    def update_blocker(self, app):
+        return App.objects.filter(environment=self, superseeds=app,
+            deployed=False)
+
     def copy(self, app, superseed=False):
         if superseed:
-            blocker = App.objects.filter(environment=self, superseeds=app,
-                deployed=False)
+            blocker = self.update_blocker(app)
 
             if blocker:
                 raise UpdateAlreadyPendingDeployment(self, app, blocker[0])
