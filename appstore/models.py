@@ -162,7 +162,7 @@ class Environment(models.Model):
 
         # are there any other apps that provide the same feature ?
         has_alternative = AppFeature.objects.filter(pk=app.provides.pk,
-            provided_by__in=self.apps.exclude(pk=app.pk))
+            provided_by__in=self.apps.filter(deployed=True).exclude(pk=app.pk))
 
         # if no other app provides the same feature as app
         if not has_alternative:
@@ -172,7 +172,7 @@ class Environment(models.Model):
 
             if app.provides in requirements:
                 # in that case find what apps require it, and fail
-                blockers = self.apps.filter(requires=app.provides)
+                blockers = self.apps.filter(requires=app.provides, deployed=True)
                 raise CannotUninstallDependency(self, app, blockers)
 
         self.apps.remove(app)

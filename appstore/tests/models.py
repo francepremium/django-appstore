@@ -92,6 +92,13 @@ class ModelsTestCase(unittest.TestCase):
         with self.assertRaises(CannotUninstallDependency) as cm:
             self.env.uninstall(self.ukulele_app)
 
+    def test_raises_CannotUninstallDependency_with_undeployed_fork(self):
+        self.env.install(self.music_app)
+        self.env.copy(self.ukulele_app, True)
+
+        with self.assertRaises(CannotUninstallDependency) as cm:
+            self.env.uninstall(self.ukulele_app)
+
     def test_uninstall_dependency(self):
         self.env.install(self.ukulele_app)
         self.env.install(self.piano_app)
