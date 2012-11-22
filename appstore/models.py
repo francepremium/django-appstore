@@ -136,13 +136,17 @@ signals.post_save.connect(deploy_superseeds_apply, sender=App)
 class Environment(models.Model):
     name = models.CharField(max_length=100, unique=True)
     apps = models.ManyToManyField('appstore.app')
-    users = models.ManyToManyField('auth.user')
+    users = models.ManyToManyField('auth.user', through='UserEnvironment')
 
     def __unicode__(self):
         return self.name
 
     class Meta:
         ordering = ('name',)
+
+    def is_admin(self, user):
+        return UserEnvironment.objects.get(user=user, environment=self
+            ).is_admin
 
     def install(self, app):
         if app in self.apps.all():
@@ -211,3 +215,35 @@ class Environment(models.Model):
         post_app_copy.send(sender=self, source_app=app, new_app=new_app)
 
         return new_app
+
+
+class UserEnvironment(models.Model):
+    environment = models.ForeignKey('Environment')
+    user = models.ForeignKey('auth.user')
+    is_admin = models.BooleanField()
+    default = models.BooleanField()
+    creation_datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('creation_datetime',)
+
+
+def default_environment(sender, instance, created, **kwargs):
+    """
+    Ensure a user has one default environment.
+
+    If user has no default environment at all, make this one the default.
+    If this one is saved as the default, set default=False on all other environments.
+    """
+
+    if not UserEnvironment.objects.filter(user=instance.user, default=True):
+        instance.default = True
+        instance.save()
+        return
+
+    if not instance.default:
+        return
+
+    UserEnvironment.objects.filter(user=instance.user).exclude(pk=instance.pk
+        ).update(default=False)
+signals.post_save.connect(default_environment, sender=UserEnvironment)

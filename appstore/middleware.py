@@ -1,15 +1,31 @@
+from models import Environment, UserEnvironment
+
+
 class EnvironmentMiddleware(object):
+    """
+    Set request.session['appstore_environment'] at all cost.
+
+    Set request.session['appstore_environment'] to the default environment it
+    has if any.
+
+    Else create a default environment for this user and set
+    request.session['appstore_environment'].
+    """
     def process_request(self, request):
         if not request.user.is_authenticated():
             return
 
-        environments = request.user.environment_set.all()
+        if 'appstore_environment' in request.session.keys():
+            return
 
-        if not environments:
-            env = request.user.environment_set.create(name=request.user.email)
-        elif 'appstore_environment' in request.session.keys():
-            env = request.session['appstore_environment']
+        try:
+            user_env = UserEnvironment.objects.get(user=request.user,
+                default=True)
+        except UserEnvironment.DoesNotExist:
+            env = Environment(name=request.user.email)
+            env.save()
+            UserEnvironment(environment=env, user=request.user,
+                    is_admin=True).save()
+            request.session['appstore_environment'] = env
         else:
-            env = environments[0]
-
-        request.session['appstore_environment'] = env
+            request.session['appstore_environment'] = user_env.environment
