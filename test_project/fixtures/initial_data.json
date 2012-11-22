@@ -419,5 +419,86 @@
                 1
             ]
         }
+    },
+    {
+        "pk": 1, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "clingcling", 
+            "app": 17
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "dugulupdugugudu", 
+            "app": 21
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "digigilili", 
+            "app": 22
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "voooovovooov", 
+            "app": 20
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "digigiligigi", 
+            "app": 16
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "vivvivvovovo", 
+            "app": 19
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "dingiding", 
+            "app": 18
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "lalallalallalallaala", 
+            "app": 23
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "gididigi", 
+            "app": 15
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "dummy_appeditor.dummyapp", 
+        "fields": {
+            "sound": "dugugdudu", 
+            "app": 14
+        }
     }
+
 ]

@@ -1,5 +1,7 @@
+{% load url from future %}
+
 <li>
-    <a href="">
+    <a href="{% url 'dummy_appeditor_dummyapp_update' app.dummyapp.pk %}">
         Dummy
     </a>
 </li>
