@@ -128,7 +128,7 @@ class AppDetailView(generic.DetailView):
                     return http.HttpResponseBadRequest('Unknown action')
 
                 if action in ('copy', 'update'):
-                    return Http.HttpResponseRedirect(reverse(
+                    return http.HttpResponseRedirect(reverse(
                         'appstore_app_update', args=(new_app.pk,)))
             except AppstoreException as e:
                 return http.HttpResponseBadRequest(e.message)
@@ -184,6 +184,9 @@ class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
             raise CannotEditDeployedApp(obj)
 
         return obj
+
+    def get_success_url(self):
+        return self.request.path
 
 
 class AppDeployView(LoginRequiredMixin, generic.DetailView):
