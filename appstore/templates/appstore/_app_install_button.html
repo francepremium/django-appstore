@@ -22,7 +22,25 @@
     </div>
 </div>
 
-<a style="{% if app not in env.apps.all or not env %}display:none{% endif %}" href="{% url appstore_app_update app.pk %}" class="btn edit">{% trans 'Edit' %}</a>
+<a href="#newVersion_{{ app|slugify }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn newVersion" data-toggle="modal">{% trans 'New version' %}</a>
+
+<div class="modal" id="newVersion_{{ app|slugify }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>{% trans 'Edit' %} {{ app }}</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            {% trans 'Should the new version, once deployed, obsolete this one in this environment' %}
+            ?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="uninstall" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app|slugify }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'No, just copy' %}</button>
+    </div>
+</div>
 
 <a href="#install_{{ app|slugify }}" style="{% if app in env.apps.all %}display:none{% endif %}" role="button" class="btn install" data-toggle="modal">{% trans 'Install' %}</a>
 

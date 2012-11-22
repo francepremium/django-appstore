@@ -11,7 +11,7 @@ from taggit.models import Tag
 
 from forms import EnvironmentForm, AppForm
 from models import Environment, AppCategory, App
-from exceptions import CannotUninstallDependency, AppAlreadyInstalled
+from exceptions import CannotUninstallDependency, AppAlreadyInstalled, CannotEditDeployedApp
 
 
 class LoginRequiredMixin(object):
@@ -102,22 +102,35 @@ class AppDetailView(generic.DetailView):
         """
         Take action with an app on the current environment on POST request.
 
-        Supported actions are: 'install' and 'uninstall'.
+        Supported actions are: 'install', 'uninstall', 'copy', 'update'.
 
-        This is ment to be accessed via ajax. Respond with 201 on success, 400
-        on failure.
+        This is ment to be accessed via ajax.
+
+        Install/uninstall: respond with 201 on success, 400 on failure.
+        Copy/update: respond with 301 redirect to update view, 400 on failure.
         """
         environment = request.session['appstore_environment']
         app = self.get_object()
 
         if request.user in environment.users.all():
             try:
-                if request.POST.get('action', None) == 'install':
+                action = request.POST.get('action', None)
+
+                if action == 'install':
                     environment.install(app)
-                elif request.POST.get('action', None) == 'uninstall':
+                elif action == 'uninstall':
                     environment.uninstall(app)
+                elif action == 'copy':
+                    new_app = environment.copy(app)
+                elif action == 'update':
+                    new_app = environment.copy(app)
                 else:
                     return http.HttpResponseBadRequest('Unknown action')
+
+                if action in ('copy', 'update'):
+                    return Http.HttpResponseRedirect(reverse(
+                        'appstore_app_update', args=(new_app.pk,)))
+
             except AppAlreadyInstalled:
                 return http.HttpResponseBadRequest('App already installed')
             except CannotUninstallDependency:
@@ -169,12 +182,10 @@ class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
         """
         If the app is already deployed: edit it, and return the edit.
         """
-        original = super(AppUpdateView, self).get_object()
+        obj = super(AppUpdateView, self).get_object()
 
-        if not original.deployed:
-            return original
-
-        obj = self.request.session['appstore_environment'].edit(original)
+        if obj.deployed:
+            raise CannotEditDeployedApp(obj)
 
         return obj
 

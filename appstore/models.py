@@ -5,9 +5,9 @@ from django.core.urlresolvers import reverse
 from taggit.managers import TaggableManager
 
 from settings import EDITOR_MODULES
-from signals import post_app_install, post_app_uninstall, post_app_edit
+from signals import post_app_install, post_app_uninstall, post_app_copy
 from exceptions import (AppAlreadyInstalled, AppNotInstalled,
-        CannotUninstallDependency)
+        CannotUninstallDependency, UpdateAlreadyPendingDeployment)
 
 
 class AppCategory(models.Model):
@@ -62,7 +62,7 @@ class App(models.Model):
         related_name='required_by')
     default_for_feature = models.BooleanField()
 
-    superseeds = models.ForeignKey('self', related_name='forks', null=True,
+    superseeds = models.ForeignKey('self', related_name='superseeded_by', null=True,
         blank=True)
     deployed = models.BooleanField()
 
@@ -91,7 +91,7 @@ class App(models.Model):
 
 def deploy_superseeds_mark_dirty(sender, instance, **kwargs):
     """
-    Check if .deployed changed, if so, set instance._deploying = True.
+    Check if .deployed changed, if so, set instance._updating = True.
 
     This will be picked up by deploy_superseeds_apply.
     """
@@ -101,8 +101,16 @@ def deploy_superseeds_mark_dirty(sender, instance, **kwargs):
     if not instance.deployed:
         return
 
-    if not App.objects.get(pk=instance.pk).deployed:
-        instance._deploying = True
+    if not instance.superseeds_id:
+        return
+
+    try:
+        actual = App.objects.get(pk=instance.pk)
+    except App.DoesNotExist:
+        return  # probably created from loaddata
+    else:
+        if not actual.deployed:
+            instance._updating = True
 signals.pre_save.connect(deploy_superseeds_mark_dirty, sender=App)
 
 
@@ -118,7 +126,7 @@ def deploy_superseeds_apply(sender, instance, created, **kwargs):
     if created:
         return
 
-    if getattr(instance, '_deploying', False):
+    if getattr(instance, '_updating', False):
         for environment in instance.environment_set.all():
             environment.uninstall(instance.superseeds)
 signals.post_save.connect(deploy_superseeds_apply, sender=App)
@@ -169,22 +177,33 @@ class Environment(models.Model):
         self.apps.remove(app)
         post_app_uninstall.send(sender=self, app=app)
 
-    def edit(self, app):
-        new_app = App.objects.create(
+    def copy(self, app, superseed=False):
+        if superseed:
+            blocker = App.objects.filter(environment=self, superseeds=app,
+                deployed=False)
+
+            if blocker:
+                raise UpdateAlreadyPendingDeployment(self, app, blocker[0])
+
+        new_app = App(
             name=app.name,
             description=app.description,
             image=app.image,
             category=app.category,
             provides=app.provides,
             editor=app.editor,
-            superseeds=app,
         )
+
+        if superseed:
+            new_app.superseeds = app
+
+        new_app.save()
 
         for requirement in app.requires.all():
             new_app.requires.add(requirement)
 
         self.install(new_app)
 
-        post_app_edit.send(sender=self, app=new_app)
+        post_app_copy.send(sender=self, source_app=app, new_app=new_app)
 
         return new_app

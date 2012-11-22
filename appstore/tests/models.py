@@ -3,8 +3,8 @@ from mock import call
 from mock_django.signals import mock_signal_receiver
 
 from ..exceptions import (AppAlreadyInstalled, AppNotInstalled,
-    CannotUninstallDependency)
-from ..signals import post_app_install, post_app_uninstall, post_app_edit
+    CannotUninstallDependency, UpdateAlreadyPendingDeployment)
+from ..signals import post_app_install, post_app_uninstall, post_app_copy
 from ..models import App, AppCategory, AppFeature, Environment
 
 
@@ -28,15 +28,15 @@ class ModelsTestCase(unittest.TestCase):
         Environment.objects.all().delete()
 
     def test_mark_dirty(self):
-        app = App(name='foo')
+        app = App(name='foo', superseeds=self.ukulele_app)
         app.save()
 
-        self.assertFalse(hasattr(app, '_deploying'))
+        self.assertFalse(hasattr(app, '_updating'))
 
         app.deployed = True
         app.save()
 
-        self.assertTrue(app._deploying)
+        self.assertTrue(app._updating)
 
     def test_raises_AppNotInstalled(self):
         with self.assertRaises(AppNotInstalled) as cm:
@@ -107,18 +107,18 @@ class ModelsTestCase(unittest.TestCase):
     def test_post_app_edit_signal(self):
         self.env.install(self.music_app)
 
-        with mock_signal_receiver(post_app_edit) as edit_receiver:
-            new_app = self.env.edit(self.ukulele_app)
+        with mock_signal_receiver(post_app_copy) as edit_receiver:
+            new_app = self.env.copy(self.ukulele_app)
 
             self.assertEqual(edit_receiver.call_args_list, [
-                call(signal=post_app_edit, sender=self.env,
-                    app=new_app),
+                call(signal=post_app_copy, sender=self.env,
+                    source_app=self.ukulele_app, new_app=new_app),
             ])
 
-    def test_edit(self):
+    def test_copy(self):
         self.env.install(self.music_app)
 
-        new_app = self.env.edit(self.ukulele_app)
+        new_app = self.env.copy(self.ukulele_app)
 
         self.assertEqual(self.ukulele_app.name, new_app.name)
         self.assertEqual(self.ukulele_app.description, new_app.description)
@@ -126,16 +126,30 @@ class ModelsTestCase(unittest.TestCase):
         self.assertEqual(self.ukulele_app.category, new_app.category)
         self.assertEqual(self.ukulele_app.provides, new_app.provides)
         self.assertEqual(self.ukulele_app.editor, new_app.editor)
-        self.assertEqual(self.ukulele_app, new_app.superseeds)
+        self.assertEqual(None, new_app.superseeds_id)
 
         self.assertEqual([self.music_app, self.ukulele_app, new_app], list(self.env.apps.all()))
 
-    def test_edit_deploy(self):
+    def test_copy_superseed(self):
         self.env.install(self.music_app)
-        new_app = self.env.edit(self.ukulele_app)
+
+        new_app = self.env.copy(self.ukulele_app, superseed=True)
+
+        self.assertEqual(self.ukulele_app, new_app.superseeds)
+
+    def test_update_deploy(self):
+        self.env.install(self.music_app)
+        new_app = self.env.copy(self.ukulele_app, True)
 
         new_app.name = 'Fork'
         new_app.deployed = True
         new_app.save()
 
         self.assertEqual([new_app, self.music_app], list(self.env.apps.all()))
+
+    def test_raises_UpdateAlreadyPendingDeployment(self):
+        self.env.install(self.music_app)
+        new_app = self.env.copy(self.ukulele_app, True)
+
+        with self.assertRaises(UpdateAlreadyPendingDeployment) as cm:
+            self.env.copy(self.ukulele_app, True)

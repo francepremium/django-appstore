@@ -33,3 +33,21 @@ class CannotUninstallDependency(AppstoreException):
         super(CannotUninstallDependency, self).__init__(
             u'Cannot uninstall %s from %s because %s depends on it' % (
                 app, env, required_by))
+
+
+class CannotEditDeployedApp(AppstoreException):
+    """
+    Raised by AppUpdateView before updating an App that is already deployed.
+    """
+    def __init__(self, app):
+        super(CannotEditDeployedApp, self).__init__(
+            u'Cannot update %s because it is already deployed' % app)
+
+
+class UpdateAlreadyPendingDeployment(AppstoreException):
+    """
+    Raised when trying to create a superseed copy when another one already exists.
+    """
+    def __init__(self, env, source_app, blocking_app):
+        super(UpdateAlreadyPendingDeployment, self).__init__(
+            u'Another update is already pending for deployment')
