@@ -24,9 +24,9 @@ def auto_dummyapp(sender, instance, created, **kwargs):
 signals.post_save.connect(auto_dummyapp, sender=App)
 
 
-def copy_dumyapp(sender, source_app, new_app, **kwargs):
+def copy_dummyapp(sender, source_app, new_app, **kwargs):
     if new_app.editor != 'appstore.contrib.dummy_app':
         return
 
     DummyApp(app=new_app, sound=source_app.dummyapp.sound).save()
-post_app_copy.connect(copy_dumyapp)
+post_app_copy.connect(copy_dummyapp)
