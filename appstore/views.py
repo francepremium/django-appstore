@@ -11,7 +11,7 @@ from taggit.models import Tag
 
 from forms import EnvironmentForm, AppForm
 from models import Environment, AppCategory, App
-from exceptions import CannotUninstallDependency, AppAlreadyInstalled, CannotEditDeployedApp
+from exceptions import AppstoreException, CannotEditDeployedApp
 
 
 class LoginRequiredMixin(object):
