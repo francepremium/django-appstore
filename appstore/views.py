@@ -145,11 +145,11 @@ class AppCreateView(LoginRequiredMixin, generic.CreateView):
     model = App
     form_class = AppForm
 
-    def form_valid(self):
+    def form_valid(self, form):
         """
         Install the newly created App in the current environment.
         """
-        result = super(AppCreateView, self).form_valid()
+        result = super(AppCreateView, self).form_valid(form)
         self.request.session['appstore_environment'].install(self.object)
         return result
 
