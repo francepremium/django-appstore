@@ -400,10 +400,7 @@
                 19, 
                 18
             ], 
-            "name": "", 
-            "users": [
-                2
-            ]
+            "name": ""
         }
     }, 
     {
@@ -414,10 +411,7 @@
                 23, 
                 14
             ], 
-            "name": "t@tt.tt", 
-            "users": [
-                1
-            ]
+            "name": "t@tt.tt"
         }
     },
     {
@@ -499,6 +493,49 @@
             "sound": "dugugdudu", 
             "app": 14
         }
+    },
+    {
+        "pk": 1, 
+        "model": "appstore.userenvironment", 
+        "fields": {
+            "environment": 1, 
+            "default": true, 
+            "creation_datetime": "2012-11-22T23:14:13.160Z", 
+            "is_admin": true, 
+            "user": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "appstore.userenvironment", 
+        "fields": {
+            "environment": 2, 
+            "default": true, 
+            "creation_datetime": "2012-11-22T23:14:19.495Z", 
+            "is_admin": true, 
+            "user": 2
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "appstore.userenvironment", 
+        "fields": {
+            "environment": 2, 
+            "default": false, 
+            "creation_datetime": "2012-11-22T23:14:35.317Z", 
+            "is_admin": true, 
+            "user": 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "appstore.userenvironment", 
+        "fields": {
+            "environment": 1, 
+            "default": false, 
+            "creation_datetime": "2012-11-22T23:14:49.573Z", 
+            "is_admin": false, 
+            "user": 2
+        }
     }
-
 ]
