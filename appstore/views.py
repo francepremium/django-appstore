@@ -186,6 +186,7 @@ class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
         return obj
 
     def get_success_url(self):
+        """ Return to the same URL """
         return self.request.path
 
 
