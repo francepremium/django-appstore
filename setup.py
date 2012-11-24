@@ -49,7 +49,7 @@ setup(
         'django-mptt',
         'django-autocomplete-light',
         'django-taggit',
-        'django-bootstrap-tags',
+        'django-forms-bootstrap',
         'mock-django',
         'pil',
     ],
