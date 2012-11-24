@@ -2,4 +2,4 @@ south
 django-debug-toolbar
 pil
 django-jenkins
--e git@github.com:francepremium/django-form-designer.git#egg=form_designer
+-e git+git@github.com:francepremium/django-form-designer.git#egg=form_designer
