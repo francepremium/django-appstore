@@ -154,6 +154,7 @@ INSTALLED_APPS = (
     'django_forms_bootstrap',
     'autocomplete_light',
     'mock_django',
+    'django_jenkins',
     'south',
     'taggit',
     'debug_toolbar',
