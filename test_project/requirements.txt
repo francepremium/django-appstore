@@ -1,3 +1,4 @@
 south
+django-debug-toolbar
 pil
 django-jenkins
