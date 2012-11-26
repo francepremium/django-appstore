@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib import messages
 
+import rules_light
 from taggit.models import Tag
 
 from forms import EnvironmentForm, AppForm
@@ -14,17 +15,8 @@ from models import Environment, AppCategory, App
 from exceptions import AppstoreException, CannotEditDeployedApp
 
 
-class LoginRequiredMixin(object):
-    """
-    Mixin that decorates dispatch with login_required.
-    """
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
-
-
-class EnvUpdateView(LoginRequiredMixin, generic.UpdateView):
+@rules_light.class_decorator
+class EnvUpdateView(generic.UpdateView):
     """
     Update the environment.
     """
@@ -110,6 +102,10 @@ class AppDetailView(generic.DetailView):
         Copy/update: respond with 301 redirect to update view, 400 on failure.
         """
         environment = request.session['appstore_environment']
+
+        rules_light.require(request.user, 'appstore.environment.update',
+            environment)
+
         app = self.get_object()
 
         if request.user in environment.users.all():
@@ -138,12 +134,17 @@ class AppDetailView(generic.DetailView):
             return http.HttpResponseForbidden('Not an admin for this env')
 
 
-class AppCreateView(LoginRequiredMixin, generic.CreateView):
+class AppCreateView(generic.CreateView):
     """
     Create an App using AppForm.
     """
     model = App
     form_class = AppForm
+
+    def dispatch(self, request, *args, **kwargs):
+        rules_light.require(request.user, 'appstore.environment.update',
+            request.session['appstore_environment'])
+        return super(AppCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """
@@ -160,7 +161,7 @@ class AppCreateView(LoginRequiredMixin, generic.CreateView):
         return reverse('appstore_app_update', args=(self.object.pk,))
 
 
-class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
+class AppUpdateView(generic.UpdateView):
     """
     Update an app.
 
@@ -183,6 +184,8 @@ class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
         if obj.deployed:
             raise CannotEditDeployedApp(obj)
 
+        rules_light.require(self.request.user, 'appstore.app.update', obj)
+
         return obj
 
     def get_success_url(self):
@@ -190,7 +193,7 @@ class AppUpdateView(LoginRequiredMixin, generic.UpdateView):
         return self.request.path
 
 
-class AppDeployView(LoginRequiredMixin, generic.DetailView):
+class AppDeployView(generic.DetailView):
     """
     Deploy an App, to make it actually usable.
     """
@@ -202,6 +205,8 @@ class AppDeployView(LoginRequiredMixin, generic.DetailView):
         Set app.deployed=True and redirect to environment configuration url.
         """
         self.object = self.get_object()
+
+        rules_light.require(self.request, 'appstore.app.deploy', obj)
 
         self.object.deployed = True
         self.object.save()

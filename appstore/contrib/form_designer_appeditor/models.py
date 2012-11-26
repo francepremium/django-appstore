@@ -6,8 +6,8 @@ from appstore.models import App
 
 
 class AppForm(models.Model):
-    app = models.ForeignKey('appstore.app')
-    form = models.ForeignKey('form_designer.form')
+    app = models.OneToOneField('appstore.app')
+    form = models.OneToOneField('form_designer.form')
 
     def __unicode__(self):
         return u'Form for %s' % self.app

@@ -105,6 +105,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'appstore.middleware.EnvironmentMiddleware',
+    'rules_light.middleware.Middleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -138,6 +139,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'rules_light',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
