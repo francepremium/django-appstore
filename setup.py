@@ -50,6 +50,7 @@ setup(
         'django-autocomplete-light',
         'django-taggit',
         'django-forms-bootstrap',
+        'django-rules-light',
         'mock-django',
         'pil',
     ],
