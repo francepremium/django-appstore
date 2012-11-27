@@ -1,3 +1,7 @@
 dependencies:
   pre:
+    - pip install -e .
     - pip install -r test_project/requirements.txt
+test:
+  override:
+      - test_project/manage.py test appstore
