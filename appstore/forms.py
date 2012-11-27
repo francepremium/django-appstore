@@ -1,3 +1,4 @@
+from django.utils.translation import ugettext_lazy as _
 from django import forms
 from django.forms.models import modelform_factory
 
@@ -22,6 +23,14 @@ class AppForm(autocomplete_light.FixedModelForm):
 
 
 class EnvironmentForm(forms.ModelForm):
+    def clean_name(self):
+        name = self.cleaned_data['name']
+
+        if not len(name.strip()):
+            raise forms.ValidationError(_(u'Name must not be blank'))
+
+        return name
+
     class Meta:
         model = Environment
         fields = ('name',)
