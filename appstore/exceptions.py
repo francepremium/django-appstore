@@ -58,3 +58,9 @@ class UpdateAlreadyPendingDeployment(AppstoreException):
         ))
 
         super(UpdateAlreadyPendingDeployment, self).__init__(msg)
+
+
+class CannotUpdateNonDeployedApp(AppstoreException):
+    def __init__(self, app):
+        super(CannotUpdateNonDeployedApp, self).__init__(
+            u'Cannot create update for non deployed app "%s"' % app)

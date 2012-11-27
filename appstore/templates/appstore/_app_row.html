@@ -12,6 +12,6 @@
         {{ app.description }}
     </td>
     <td>
-        {% include 'appstore/_app_install_button.html' %}
+        {% include 'appstore/_app_install_button.html' with env=request.session.appstore_environment %}
     </td>
 </tr>

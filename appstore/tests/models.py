@@ -3,7 +3,8 @@ from mock import call
 from mock_django.signals import mock_signal_receiver
 
 from ..exceptions import (AppAlreadyInstalled, AppNotInstalled,
-    CannotUninstallDependency, UpdateAlreadyPendingDeployment)
+    CannotUninstallDependency, UpdateAlreadyPendingDeployment,
+    CannotUpdateNonDeployedApp)
 from ..signals import post_app_install, post_app_uninstall, post_app_copy
 from ..models import App, AppCategory, AppFeature, Environment
 
@@ -143,6 +144,14 @@ class ModelsTestCase(unittest.TestCase):
         new_app = self.env.copy(self.ukulele_app, superseed=True)
 
         self.assertEqual(self.ukulele_app, new_app.superseeds)
+
+    def test_raise_CannotUpdateNonDeployedApp(self):
+        self.env.install(self.ukulele_app)
+        update = self.env.copy(self.ukulele_app, superseed=True)
+
+        with self.assertRaises(CannotUpdateNonDeployedApp) as cm:
+            self.env.copy(update, superseed=True)
+
 
     def test_update_deploy(self):
         self.env.install(self.music_app)

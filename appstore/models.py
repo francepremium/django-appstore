@@ -8,7 +8,8 @@ from taggit.managers import TaggableManager
 from settings import EDITOR_MODULES
 from signals import post_app_install, post_app_uninstall, post_app_copy
 from exceptions import (AppAlreadyInstalled, AppNotInstalled,
-        CannotUninstallDependency, UpdateAlreadyPendingDeployment)
+        CannotUninstallDependency, UpdateAlreadyPendingDeployment,
+        CannotUpdateNonDeployedApp)
 
 
 class AppCategory(models.Model):
@@ -188,6 +189,9 @@ class Environment(models.Model):
 
     def copy(self, app, superseed=False):
         if superseed:
+            if not app.deployed:
+                raise CannotUpdateNonDeployedApp(app)
+
             blocker = self.update_blocker(app)
 
             if blocker:
