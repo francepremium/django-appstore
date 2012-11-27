@@ -21,16 +21,7 @@ class EnvUpdateView(generic.UpdateView):
     Update the environment.
     """
     form_class = EnvironmentForm
-
-    def get_queryset(self):
-        """
-        Staff users can edit any environment, other users may only edit their
-        own environment (for now).
-        """
-        if self.request.user.is_staff:
-            return Environment.objects.all()
-        else:
-            return Environment.objects.filter(users=self.request.user)
+    model = Environment
 
     def get_success_url(self):
         """
