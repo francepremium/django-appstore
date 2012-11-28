@@ -1,0 +1,152 @@
+{% extends 'appstore/base.html' %}
+
+{% load url from future %}
+{% load i18n %}
+
+{% block body %}
+<h2>{% trans 'Users of environment' %}{% if environment.name %}: {{ environment }}{% endif %}</h2>
+
+<table class="userenvironment">
+    <thead>
+        <tr>
+            <th class="firstName">{% trans 'First name' %}</th>
+            <th class="lastName">{% trans 'Last name' %}</th>
+            <th class="email">{% trans 'Email' %}</th>
+            <th class="creationDatetime">{% trans 'Join date' %}</th>
+            <th class="level">{% trans 'Level' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for userenvironment in userenvironment_list %}
+    <tr 
+        data-you="{% if userenvironment.user == request.user %}1{% else %}0{% endif %}" 
+        data-admin="{% if userenvironment.is_admin %}1{% else %}0{% endif %}">
+        <td class="firstName">
+            {{ userenvironment.user.first_name }}
+        </td>
+        <td class="lastName">
+            {{ userenvironment.user.last_name }}
+        </td>
+        <td class="email">
+            {{ userenvironment.user.email }}
+        </td>
+        <td class="creationDatetime">
+            {{ userenvironment.creation_datetime }}
+        </td>
+        <td class="level">
+            <select>
+                <option 
+                    value="admin" 
+                    {% if userenvironment.is_admin %}selected="selected"{% endif %}
+                    data-message="{% blocktrans with user=userenvironment.user environment=environment %}Are you sure you want to promote {{ user }} to administrator in environment {{ environment }}{% endblocktrans %}"
+                    data-action="{% url 'appstore_userenvironment_update' userenvironment.pk %}">
+                    {% trans 'Admin' %}
+                </option>
+                <option 
+                    value="user" 
+                    {% if not userenvironment.is_admin %}selected="selected"{% endif %}
+                    data-message="{% blocktrans with user=userenvironment.user environment=environment %}Are you sure you want to demote {{ user }} from administrator to user in environment {{ environment }}{% endblocktrans %}"
+                    data-action="{% url 'appstore_userenvironment_update' userenvironment.pk %}">
+                    {% trans 'User' %}
+                </option>
+                <option 
+                    value="revoke" 
+                    data-message="{% blocktrans with user=userenvironment.user environment=environment %}Are you sure you want to revoke {{ user }}'s permission to access environment {{ environment }}{% endblocktrans %}"
+                    data-action="{% url 'appstore_userenvironment_delete' userenvironment.pk %}">
+                    {% trans 'Revoke' %}
+                </option>
+            </select>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="userenvironment modal hide fade">
+    <div class="modal-header">
+         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+         <h3>{% trans 'Change access to environment' %}</h3>
+    </div>
+    <div class="modal-body">
+        <p class="message"></p>
+        <div class="alert alert-error bigFatWarning" style="display: none">
+            <p><b>{% trans 'Warning' %}</b> {% trans 'After you confirm, you will not be able to administrate this environment anymore' %} !</p>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
+        <a href="#" class="btn save btn-primary">Save changes</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        var modal = $('.userenvironment.modal');
+
+        $('.userenvironment .level select').change(function() {
+            var option = $(this).find('option:selected');
+
+            if (! $('table.userenvironment').find('option:selected[value=admin]').length) {
+                $(this).val('admin');
+                alert('You cannot remove the last admin of an environment');
+                return;
+            }
+
+            modal.find('.modal-body p.message').html(option.data('message'));
+            modal.data('option', option);
+
+            var row = option.parents('tr');
+
+            if (row.data('you') == '1') {
+                modal.find('.bigFatWarning').show();
+            }
+
+            modal.modal('show');
+        });
+
+        $('.userenvironment.modal .save').click(function() {
+            var option = modal.data('option');
+
+            switch(option.attr('value')) {
+                case 'revoke':
+                    var data = {};
+                    break;
+                case 'admin':
+                    var data = {is_admin: '1'};
+                    break;
+                case 'user':
+                    var data = {is_admin: '0'};
+                    break;
+            }
+
+
+            $.ajax(option.data('action'), {
+                'type': 'post',
+                'data': data,
+                'success': function(data, textStatus, jqXHR) {
+                    if (option.attr('value') == 'revoke')
+                        option.parents('tr').slideUp();
+
+                    modal.modal('hide');
+                    if (data == 'redirect') {
+                        location.href('/');
+                    }
+                    return;
+                },
+            });
+        });
+
+        $(document).keyup(function(e) {
+            if (e.which == 27) { // esc
+                $('.modal:visible').modal('hide');
+                $('table.userenvironment tr').each(function() {
+                    $(this).find('select').val($(this).data('admin') == '1' ? 'admin' : 'user');
+                });
+                modal.find('.bigFatWarning').hide();
+            }
+        });
+    });
+</script>
+{% endblock %}

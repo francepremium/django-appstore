@@ -9,7 +9,7 @@ from settings import EDITOR_MODULES
 from signals import post_app_install, post_app_uninstall, post_app_copy
 from exceptions import (AppAlreadyInstalled, AppNotInstalled,
         CannotUninstallDependency, UpdateAlreadyPendingDeployment,
-        CannotUpdateNonDeployedApp)
+        CannotUpdateNonDeployedApp, CannotRemoveLastAdmin)
 
 
 class AppCategory(models.Model):
@@ -251,3 +251,27 @@ def default_environment(sender, instance, created, **kwargs):
     UserEnvironment.objects.filter(user=instance.user).exclude(pk=instance.pk
         ).update(default=False)
 signals.post_save.connect(default_environment, sender=UserEnvironment)
+
+
+def admin_required_update(sender, instance, **kwargs):
+    if instance.is_admin == True:
+        return
+
+    admins = UserEnvironment.objects.filter(environment=instance.environment,
+        is_admin=True).exclude(pk=instance.pk).count()
+
+    if not admins:
+        raise CannotRemoveLastAdmin(instance)
+signals.pre_save.connect(admin_required_update, sender=UserEnvironment)
+
+
+def admin_required_delete(sender, instance, **kwargs):
+    if not instance.is_admin == True:
+        return
+
+    admins = UserEnvironment.objects.filter(environment=instance.environment,
+        is_admin=True).exclude(pk=instance.pk).count()
+
+    if not admins:
+        raise CannotRemoveLastAdmin(instance)
+signals.pre_delete.connect(admin_required_delete, sender=UserEnvironment)

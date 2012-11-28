@@ -64,3 +64,9 @@ class CannotUpdateNonDeployedApp(AppstoreException):
     def __init__(self, app):
         super(CannotUpdateNonDeployedApp, self).__init__(
             u'Cannot create update for non deployed app "%s"' % app)
+
+
+class CannotRemoveLastAdmin(AppstoreException):
+    def __init__(self, env):
+        super(CannotRemoveLastAdmin, self).__init__(
+            u'Cannot remove the last admin of environment "%s"' % env)

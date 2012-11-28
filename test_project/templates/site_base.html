@@ -64,4 +64,14 @@
 
         {% block extra_body %}
         {% endblock %}
+
+        {% block jquery_cookie %}
+            <script src="{{ STATIC_URL }}form_designer/jquery.cookie.js" type="text/javascript"></script>
+        {% endblock %}
+        {% block js_var_csrftoken %}
+            <script type="text/javascript">
+                var csrftoken = $.cookie('csrftoken');
+                {% include 'form_designer/origin_security.js' %}
+            </script>
+        {% endblock %}
     </body>

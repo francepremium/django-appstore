@@ -11,8 +11,74 @@ import rules_light
 from taggit.models import Tag
 
 from forms import EnvironmentForm, AppForm
-from models import Environment, AppCategory, App
+from models import Environment, AppCategory, App, UserEnvironment
 from exceptions import AppstoreException, CannotEditDeployedApp
+
+
+class UserEnvironmentListView(generic.ListView):
+    model = UserEnvironment
+
+    def get_queryset(self):
+        self.environment = Environment.objects.get(pk=self.kwargs['env_pk'])
+
+        rules_light.require(self.request.user, 'appstore.environment.update',
+            self.environment)
+
+        return UserEnvironment.objects.filter(environment=self.environment
+            ).select_related('user')
+
+    def get_context_data(self, object_list):
+        return {
+            'environment': self.environment,
+            'userenvironment_list': object_list,
+        }
+
+
+class UserEnvironmentSecurityMixin(object):
+    def get_object(self, queryset=None):
+        obj = super(UserEnvironmentSecurityMixin, self).get_object(
+            queryset)
+
+        rules_light.require(self.request.user, 'appstore.environment.update',
+            obj.environment)
+
+        return obj
+
+    def respond(self):
+        redirect = rules_light.run(self.request.user,
+            'appstore.environment.update', self.object.environment) == False
+
+        if redirect:
+            data = 'redirect'
+        else:
+            data = 'sucess'
+
+        return http.HttpResponse(data, status=204)
+
+
+class UserEnvironmentDeleteView(UserEnvironmentSecurityMixin,
+    generic.DetailView):
+
+    http_method_names = ['post']
+    model = UserEnvironment
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        return self.respond()
+
+
+class UserEnvironmentUpdateView(UserEnvironmentSecurityMixin,
+    generic.DetailView):
+
+    http_method_names = ['post']
+    model = UserEnvironment
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.is_admin = request.POST['is_admin'] == u'1'
+        self.object.save()
+        return self.respond()
 
 
 @rules_light.class_decorator
