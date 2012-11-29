@@ -8,6 +8,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
