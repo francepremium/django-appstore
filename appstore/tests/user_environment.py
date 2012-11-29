@@ -1,3 +1,4 @@
+import datetime
 import unittest
 
 from django.core.urlresolvers import reverse
@@ -8,10 +9,14 @@ from ..models import Environment, UserEnvironment
 from ..middleware import EnvironmentMiddleware
 
 
+NOW = datetime.datetime.now()
+
+
 class UserEnvironmentTestCase(unittest.TestCase):
     def setUp(self):
-        User.objects.all().delete()
+        Environment.objects.all().update(mark_for_delete=NOW)
         Environment.objects.all().delete()
+        User.objects.all().delete()
 
     def make_user(self, name):
         return User.objects.create(email=u'%s@example.com' % name,

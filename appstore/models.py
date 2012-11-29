@@ -1,3 +1,5 @@
+import datetime
+
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import signals
@@ -138,6 +140,7 @@ class Environment(models.Model):
     name = models.CharField(max_length=100, unique=True)
     apps = models.ManyToManyField('appstore.app')
     users = models.ManyToManyField('auth.user', through='UserEnvironment')
+    mark_for_delete = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -221,6 +224,12 @@ class Environment(models.Model):
         return new_app
 
 
+def mark_for_delete(sender, instance, **kwargs):
+    instance.mark_for_delete = datetime.datetime.now()
+    instance.save()
+signals.pre_delete.connect(mark_for_delete, Environment)
+
+
 class UserEnvironment(models.Model):
     environment = models.ForeignKey('Environment')
     user = models.ForeignKey('auth.user')
@@ -267,6 +276,9 @@ signals.pre_save.connect(admin_required_update, sender=UserEnvironment)
 
 def admin_required_delete(sender, instance, **kwargs):
     if not instance.is_admin == True:
+        return
+
+    if instance.environment.mark_for_delete:
         return
 
     admins = UserEnvironment.objects.filter(environment=instance.environment,
