@@ -1,0 +1,9 @@
+{% load i18n %}{% load url from future %}
+
+{% blocktrans with user=user %}Hello {{ user }}{% endblocktrans %}
+
+{% blocktrans with creator=creator environment=environment site_name=site_name %}{{ creator }} invited you to join his environment {{ environment }} on {{ site_name }}{% endblocktrans %}
+
+{% blocktrans with password=password %}Your password is: {{ password }}{% endblocktrans %}
+
+{% blocktrans with site_domain=site_domain %}To join, login with your email address and password on http://{{ site_domain }} and click on your name in the top right corner.{% endblocktrans %}

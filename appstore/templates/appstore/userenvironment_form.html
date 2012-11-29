@@ -1,0 +1,13 @@
+{% extends 'appstore/base.html' %}
+
+{% load i18n %}
+{% load bootstrap_tags %}
+{% load url from future %}
+
+{% block body %}
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form|as_bootstrap }}
+    <button type="submit" class="btn">{% trans 'Submit' %}</button>
+</form>
+{% endblock %}

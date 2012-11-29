@@ -1,16 +1,15 @@
+from django.contrib.sites.models import get_current_site
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django.views import generic
 from django import http
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib import messages
 
 import rules_light
 from taggit.models import Tag
 
-from forms import EnvironmentForm, AppForm
+from forms import EnvironmentForm, AppForm, UserEnvironmentCreateForm
 from models import Environment, AppCategory, App, UserEnvironment
 from exceptions import AppstoreException, CannotEditDeployedApp
 
@@ -54,6 +53,50 @@ class UserEnvironmentSecurityMixin(object):
             data = 'sucess'
 
         return http.HttpResponse(data, status=204)
+
+
+class UserEnvironmentCreateView(generic.FormView):
+    form_class = UserEnvironmentCreateForm
+    model = UserEnvironment
+    template_name = 'appstore/userenvironment_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.environment = Environment.objects.get(pk=kwargs['env_pk'])
+
+        rules_light.require(request.user, 'appstore.environment.update',
+            self.environment)
+
+        return super(UserEnvironmentCreateView, self).dispatch(request, *args,
+            **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(UserEnvironmentCreateView, self).get_form_kwargs()
+        kwargs['environment'] = self.environment
+        return kwargs
+
+    def form_valid(self, form):
+        site = get_current_site(self.request)
+
+        mail_context = {
+            'creator': self.request.user,
+            'environment': self.environment,
+            'site': site,
+            'site_name': site.name,
+            'site_domain': site.domain,
+        }
+
+        self.object = form.save(mail_context)
+
+        return super(UserEnvironmentCreateView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(UserEnvironmentCreateView, self).get_context_data(
+            **kwargs)
+        context['environment'] = self.environment
+        return context
+
+    def get_success_url(self):
+        return reverse('appstore_userenvironment_list', args=(self.environment.pk,))
 
 
 class UserEnvironmentDeleteView(UserEnvironmentSecurityMixin,
