@@ -1,3 +1,5 @@
+from django import http
+
 from models import Environment, UserEnvironment
 
 
@@ -16,6 +18,15 @@ class EnvironmentMiddleware(object):
             return
 
         if 'appstore_environment' in request.session.keys():
+            try:
+                UserEnvironment.objects.get(user=request.user,
+                    environment=request.session['appstore_environment'])
+            except UserEnvironment.DoesNotExist:
+                env = UserEnvironment.objects.filter(user=request.user
+                    )[0].environment
+                request.session['appstore_environment'] = env
+                # todo: message
+                return http.HttpResponseRedirect('/')
             return
 
         try:
