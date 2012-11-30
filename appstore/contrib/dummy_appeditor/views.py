@@ -12,6 +12,7 @@ class DummyAppUpdateView(generic.UpdateView):
         return self.request.path
 
     def get_context_data(self, *args, **kwargs):
-        context = super(DummyAppUpdateView, self).get_context_data(*args, **kwargs)
+        context = super(DummyAppUpdateView, self).get_context_data(*args,
+                                                                   **kwargs)
         context['app'] = self.object.app
         return context

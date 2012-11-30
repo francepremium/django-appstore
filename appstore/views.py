@@ -68,13 +68,13 @@ class UserEnvironmentSecurityMixin(object):
         return obj
 
     def respond(self):
-        redirect = rules_light.run(self.request.user,
-            'appstore.environment.update', self.object.environment) == False
+        runs = rules_light.run(self.request.user,
+            'appstore.environment.update', self.object.environment)
 
-        if redirect:
-            data = 'redirect'
-        else:
+        if runs:
             data = 'sucess'
+        else:
+            data = 'redirect'
 
         return http.HttpResponse(data, status=204)
 
@@ -120,11 +120,12 @@ class UserEnvironmentCreateView(generic.FormView):
         return context
 
     def get_success_url(self):
-        return reverse('appstore_userenvironment_list', args=(self.environment.pk,))
+        return reverse('appstore_userenvironment_list',
+                       args=(self.environment.pk,))
 
 
 class UserEnvironmentDeleteView(UserEnvironmentSecurityMixin,
-    generic.DetailView):
+                                generic.DetailView):
 
     http_method_names = ['post']
     model = UserEnvironment
@@ -136,7 +137,7 @@ class UserEnvironmentDeleteView(UserEnvironmentSecurityMixin,
 
 
 class UserEnvironmentUpdateView(UserEnvironmentSecurityMixin,
-    generic.DetailView):
+                                generic.DetailView):
 
     http_method_names = ['post']
     model = UserEnvironment

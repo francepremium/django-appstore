@@ -66,8 +66,8 @@ class App(models.Model):
         related_name='required_by')
     default_for_feature = models.BooleanField()
 
-    superseeds = models.ForeignKey('self', related_name='superseeded_by', null=True,
-        blank=True)
+    superseeds = models.ForeignKey('self', related_name='superseeded_by',
+                                   null=True, blank=True)
     deployed = models.BooleanField()
 
     editor = models.CharField(null=True, blank=True, choices=EDITOR_MODULES,
@@ -180,7 +180,8 @@ class Environment(models.Model):
 
             if app.provides in requirements:
                 # in that case find what apps require it, and fail
-                blockers = self.apps.filter(requires=app.provides, deployed=True)
+                blockers = self.apps.filter(requires=app.provides,
+                                            deployed=True)
                 raise CannotUninstallDependency(self, app, blockers)
 
         self.apps.remove(app)
@@ -246,7 +247,8 @@ def default_environment(sender, instance, created, **kwargs):
     Ensure a user has one default environment.
 
     If user has no default environment at all, make this one the default.
-    If this one is saved as the default, set default=False on all other environments.
+    If this one is saved as the default, set default=False on all other
+    environments.
     """
 
     if not UserEnvironment.objects.filter(user=instance.user, default=True):
@@ -263,7 +265,7 @@ signals.post_save.connect(default_environment, sender=UserEnvironment)
 
 
 def admin_required_update(sender, instance, **kwargs):
-    if instance.is_admin == True:
+    if instance.is_admin:
         return
 
     admins = UserEnvironment.objects.filter(environment=instance.environment,
@@ -275,7 +277,7 @@ signals.pre_save.connect(admin_required_update, sender=UserEnvironment)
 
 
 def admin_required_delete(sender, instance, **kwargs):
-    if not instance.is_admin == True:
+    if not instance.is_admin:
         return
 
     if instance.environment.mark_for_delete:

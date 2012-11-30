@@ -26,7 +26,8 @@ class AppForm(autocomplete_light.FixedModelForm):
     def __init__(self, *args, **kwargs):
         super(AppForm, self).__init__(*args, **kwargs)
         self.fields['editor'].initial = self.fields['editor'].choices[1][0]
-        self.fields['provides'].initial = self.fields['provides'].queryset[0].pk
+        default_feature = self.fields['provides'].queryset[0].pk
+        self.fields['provides'].initial = default_feature
 
     class Meta:
         fields = ('name', 'description', 'editor', 'provides')
@@ -90,9 +91,11 @@ class UserEnvironmentCreateForm(forms.Form):
 
             mail_template = 'appstore/user_created_notification_message.txt'
         else:
-            mail_template = 'appstore/environment_open_notification_message.txt'
+            mail_template = \
+                'appstore/environment_open_notification_message.txt'
 
-        subject = _(u'%(creator)s invited you to join %(environment)s on %(site_name)s')
+        s = u'%(creator)s invited you to join %(environment)s on %(site_name)s'
+        subject = _(s)
         subject = subject % mail_context
         message = render_to_string(mail_template, mail_context)
 

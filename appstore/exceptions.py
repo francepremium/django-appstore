@@ -49,12 +49,14 @@ class CannotEditDeployedApp(AppstoreException):
 
 class UpdateAlreadyPendingDeployment(AppstoreException):
     """
-    Raised when trying to create a superseed copy when another one already exists.
+    Raised when trying to create a superseed copy when another one already
+    exists.
     """
     def __init__(self, env, source_app, blocking_app):
         msg = u' '.join((
             unicode(_(u'Another update is already pending for deployment.')),
-            unicode(_(u'Uninstall it or deploy it before creating a new update')),
+            unicode(
+                _(u'Uninstall it or deploy it before creating a new update')),
         ))
 
         super(UpdateAlreadyPendingDeployment, self).__init__(msg)

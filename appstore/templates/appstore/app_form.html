@@ -4,6 +4,7 @@
 
 {% block body %}
 {{ block.super }}
+hi
 <form enctype="multipart/form-data" action="" method="POST">
     {% csrf_token %}
     {{ form|as_bootstrap }}
