@@ -4,12 +4,14 @@ from django.views import generic
 from models import AppFeature, AppCategory
 from views import (AppCategoryListView, AppCategoryDetailView, AppDeployView,
     AppDetailView, AppCreateView, AppUpdateView, EnvUpdateView,
-    UserEnvironmentListView, UserEnvironmentUpdateView,
+    UserEnvironmentListView, UserEnvironmentUpdateView, EnvActivateView,
     UserEnvironmentDeleteView, UserEnvironmentCreateView)
 
 urlpatterns = patterns('',
     # Env settings
-    url(r'env/(?P<pk>\d+)/$', EnvUpdateView.as_view(),
+    url(r'env/(?P<pk>\d+)/$', EnvActivateView.as_view(),
+        name='appstore_env_activate'),
+    url(r'env/(?P<pk>\d+)/update/$', EnvUpdateView.as_view(),
         name='appstore_env_update'),
     url(r'env/(?P<env_pk>\d+)/users/$', UserEnvironmentListView.as_view(),
         name='appstore_userenvironment_list'),

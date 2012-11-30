@@ -14,6 +14,18 @@ from models import Environment, AppCategory, App, UserEnvironment
 from exceptions import AppstoreException, CannotEditDeployedApp
 
 
+class EnvActivateView(generic.DetailView):
+    model = Environment
+
+    def get(self, request, *args, **kwargs):
+        env = self.get_object()
+
+        rules_light.require(request.user, 'appstore.environment.read', env)
+
+        request.session['appstore_environment'] = env
+        return http.HttpResponseRedirect('/')
+
+
 class UserEnvironmentListView(generic.ListView):
     model = UserEnvironment
 
