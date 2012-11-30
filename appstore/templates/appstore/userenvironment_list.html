@@ -6,6 +6,8 @@
 {% block body %}
 <h2>{% trans 'Users of environment' %}{% if environment.name %}: {{ environment }}{% endif %}</h2>
 
+<a href="{% url 'appstore_userenvironment_create' environment.pk %}">{% trans 'Add user' %}</a>
+
 <table class="userenvironment">
     <thead>
         <tr>
