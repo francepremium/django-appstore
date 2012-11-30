@@ -23,6 +23,11 @@ class AppFormBase(autocomplete_light.FixedModelForm):
 
 
 class AppForm(autocomplete_light.FixedModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AppForm, self).__init__(*args, **kwargs)
+        self.fields['editor'].initial = self.fields['editor'].choices[1][0]
+        self.fields['provides'].initial = self.fields['provides'].queryset[0].pk
+
     class Meta:
         fields = ('name', 'description', 'editor', 'provides')
         model = App
