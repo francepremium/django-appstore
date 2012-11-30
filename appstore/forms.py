@@ -49,7 +49,7 @@ class UserEnvironmentCreateForm(forms.Form):
     is_admin = forms.BooleanField(required=False)
 
     def clean_email(self):
-        email = self.cleaned_data['email']
+        email = self.cleaned_data['email'].lower()
         exists = UserEnvironment.objects.filter(user__email=email,
             environment=self.environment).count()
 
