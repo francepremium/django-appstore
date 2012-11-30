@@ -306,7 +306,8 @@ class AppDeployView(generic.DetailView):
         """
         self.object = self.get_object()
 
-        rules_light.require(self.request, 'appstore.app.deploy', obj)
+        rules_light.require(self.request.user, 'appstore.app.deploy',
+                            self.object)
 
         self.object.deployed = True
         self.object.save()
