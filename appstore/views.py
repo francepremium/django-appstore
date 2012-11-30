@@ -14,6 +14,18 @@ from models import Environment, AppCategory, App, UserEnvironment
 from exceptions import AppstoreException, CannotEditDeployedApp
 
 
+class EnvCreateView(generic.CreateView):
+    model = Environment
+    form_class = EnvironmentForm
+
+    def form_valid(self, form):
+        env = form.save()
+        UserEnvironment.objects.create(user=self.request.user, environment=env,
+                                       is_admin=True)
+        self.request.session['appstore_environment'] = env
+        return http.HttpResponseRedirect('/')
+
+
 class EnvActivateView(generic.DetailView):
     model = Environment
 
