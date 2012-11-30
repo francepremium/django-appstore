@@ -1,4 +1,6 @@
+import datetime
 import unittest
+
 from mock import call
 from mock_django.signals import mock_signal_receiver
 
@@ -26,6 +28,7 @@ class ModelsTestCase(unittest.TestCase):
         App.objects.all().delete()
         AppCategory.objects.all().delete()
         AppFeature.objects.all().delete()
+        Environment.objects.all().update(mark_for_delete=datetime.datetime.now())
         Environment.objects.all().delete()
 
     def test_mark_dirty(self):
