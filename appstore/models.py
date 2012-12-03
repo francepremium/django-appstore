@@ -142,6 +142,10 @@ class Environment(models.Model):
     users = models.ManyToManyField('auth.user', through='UserEnvironment')
     mark_for_delete = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def deployed_apps(self):
+        return self.apps.all().filter(deployed=True)
+
     def __unicode__(self):
         return self.name
 
