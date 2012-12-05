@@ -156,6 +156,10 @@ class Environment(models.Model):
         return UserEnvironment.objects.get(user=user, environment=self
             ).is_admin
 
+    @property
+    def features(self):
+        return AppFeature.objects.filter(provided_by__in=self.apps.all())
+
     def install(self, app):
         if app in self.apps.all():
             raise AppAlreadyInstalled(self, app)
