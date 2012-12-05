@@ -1,3 +1,5 @@
+import copy
+
 from django.db import models
 from django.db.models import signals
 
@@ -27,13 +29,11 @@ signals.post_save.connect(auto_appform, sender=App)
 
 
 def copy_form(sender, source_app, new_app, **kwargs):
-    new_app.appform.form.tab_set.all().delete()
-
     for tab in source_app.appform.form.tab_set.all():
-        new_tab = new_app.appform.form.tab_set.create(
-            name=tab.name,
-            verbose_name=tab.verbose_name,
-            order=tab.order)
+        new_tab = copy.deepcopy(tab)
+        new_tab.pk = None
+        new_tab.form = new_app.appform.form
+        new_tab.save()
 
         for widget in tab.widget_set.all().select_subclasses():
             widget.pk = None
