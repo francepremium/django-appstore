@@ -29,6 +29,9 @@ signals.post_save.connect(auto_appform, sender=App)
 
 
 def copy_form(sender, source_app, new_app, **kwargs):
+    if source_app.editor != 'appstore.contrib.form_designer_appeditor':
+        return
+
     for tab in source_app.appform.form.tab_set.all():
         new_tab = copy.deepcopy(tab)
         new_tab.pk = None
