@@ -1,5 +1,6 @@
 import copy
 
+from django.db.models import Count
 from django.db import models
 from django.db.models import signals
 
@@ -43,4 +44,7 @@ def copy_form(sender, source_app, new_app, **kwargs):
             widget.id = None
             widget.tab = new_tab
             widget.save()
+
+    new_app.appform.form.tab_set.annotate(widget_count=Count('widget')
+            ).filter(widget_count=0).delete()
 post_app_copy.connect(copy_form)
