@@ -45,6 +45,11 @@ def copy_form(sender, source_app, new_app, **kwargs):
             widget.tab = new_tab
             widget.save()
 
-    new_app.appform.form.tab_set.annotate(widget_count=Count('widget')
-            ).filter(widget_count=0).delete()
+    empty = new_app.appform.form.tab_set.annotate(widget_count=Count('widget')
+            ).filter(widget_count=0)
+
+    if empty.count() == new_app.appform.form.tab_set.all().count():
+        empty.exclude(pk=new_app.appform.form.tab_set.all()[0].pk).delete()
+    else:
+        empty.delete()
 post_app_copy.connect(copy_form)
