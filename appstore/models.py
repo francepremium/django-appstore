@@ -132,7 +132,8 @@ def deploy_superseeds_apply(sender, instance, created, **kwargs):
 
     if getattr(instance, '_updating', False):
         for environment in instance.environment_set.all():
-            environment.uninstall(instance.superseeds)
+            if instance.superseeds in environment.apps.all():
+                environment.uninstall(instance.superseeds)
 signals.post_save.connect(deploy_superseeds_apply, sender=App)
 
 
