@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.sites.models import get_current_site
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -21,6 +22,7 @@ class EnvCreateView(generic.CreateView):
 
     def form_valid(self, form):
         env = form.save()
+        messages.success(self.request, _(u'Environment "%s" created') % env)
         UserEnvironment.objects.create(user=self.request.user, environment=env,
                                        is_admin=True)
         self.request.session['appstore_environment'] = env
@@ -240,14 +242,20 @@ class AppDetailView(generic.DetailView):
 
                 if action == 'install':
                     environment.install(app)
+                    msg = _(u'%s installed into environment %s') % (app, environment)
                 elif action == 'uninstall':
                     environment.uninstall(app)
+                    msg = _(u'%s uninstalled from environment %s') % (app, environment)
                 elif action == 'copy':
                     new_app = environment.copy(app)
+                    msg = _(u'%s copied into environment %s') % (app, environment)
                 elif action == 'update':
+                    msg = _(u'%s copied for update in environment %s') % (app, environment)
                     new_app = environment.copy(app, True)
                 else:
                     return http.HttpResponseBadRequest('Unknown action')
+
+                messages.success(request, msg)
 
                 if action in ('copy', 'update'):
                     return http.HttpResponseRedirect(reverse(
@@ -277,6 +285,7 @@ class AppCreateView(generic.CreateView):
         Install the newly created App in the current environment.
         """
         result = super(AppCreateView, self).form_valid(form)
+        messages.success(self.request, _(u'App %s created') % self.object)
         self.request.session['appstore_environment'].install(self.object)
         return result
 
@@ -338,9 +347,8 @@ class AppDeployView(generic.DetailView):
         self.object.deployed = True
         self.object.save()
 
-        if 'django.contrib.messages' in settings.INSTALLED_APPS:
-            messages.add_message(self.request, messages.SUCCESS,
-                _(u'App successfully deployed.'))
+        messages.success(self.request, _(u'App %s successfully deployed.') %
+                self.object)
 
         return http.HttpResponseRedirect(reverse('appstore_env_update',
             args=[self.request.session['appstore_environment'].pk]))
