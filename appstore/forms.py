@@ -78,6 +78,8 @@ class UserEnvironmentCreateForm(forms.Form):
             is_admin=self.cleaned_data.get('is_admin', False))
 
         mail_context['user'] = user
+        mail_context.setdefault('environment_url',
+                self.environment.get_absolute_url())
 
         if created:
             user.first_name = self.cleaned_data['first_name']

@@ -233,6 +233,9 @@ class Environment(models.Model):
 
         return new_app
 
+    def get_absolute_url(self):
+        return reverse('appstore_env_activate', args=(self.pk,))
+
 
 def mark_for_delete(sender, instance, **kwargs):
     instance.mark_for_delete = datetime.datetime.now()
