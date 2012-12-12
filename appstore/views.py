@@ -310,6 +310,10 @@ class AppUpdateView(generic.UpdateView):
     form_class = AppForm
     context_object_name = 'app'
 
+    def form_valid(self, form):
+        messages.success(self.request, _(u'App updated'))
+        return super(AppUpdateView, self).form_valid(form)
+
     def get_object(self):
         """
         If the app is already deployed: edit it, and return the edit.
