@@ -22,7 +22,8 @@ class EnvCreateView(generic.CreateView):
 
     def form_valid(self, form):
         env = form.save()
-        messages.success(self.request, _(u'Environment "%s" created') % env)
+        messages.success(self.request,
+                _(u'Environment "%s" created and activated') % env)
         UserEnvironment.objects.create(user=self.request.user, environment=env,
                                        is_admin=True)
         self.request.session['appstore_environment'] = env
@@ -36,6 +37,8 @@ class EnvActivateView(generic.DetailView):
         env = self.get_object()
 
         rules_light.require(request.user, 'appstore.environment.read', env)
+
+        messages.success(self.request, _(u'Environment "%s" activated') % env)
 
         request.session['appstore_environment'] = env
         return http.HttpResponseRedirect('/')
@@ -159,6 +162,10 @@ class EnvUpdateView(generic.UpdateView):
     """
     form_class = EnvironmentForm
     model = Environment
+
+    def form_valid(self, form):
+        messages.success(self.request, _(u'Env updated'))
+        return super(EnvUpdateView, self).form_valid(form)
 
     def get_success_url(self):
         """
