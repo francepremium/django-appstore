@@ -55,6 +55,7 @@
         $('[data-appstore-app-action]').click(function() {
             {% if request.user.is_authenticated %}
             var btn = $(this);
+            btn.attr('disabled', 'disabled');
 
             $.ajax({
                 type: 'POST',
