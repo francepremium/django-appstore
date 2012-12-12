@@ -1,3 +1,4 @@
+from django.conf import settings
 from django import http
 
 from models import Environment, UserEnvironment
@@ -14,6 +15,9 @@ class EnvironmentMiddleware(object):
     request.session['appstore_environment'].
     """
     def process_request(self, request):
+        if settings.STATIC_URL in request.path:
+            return
+
         if not request.user.is_authenticated():
             return
 
