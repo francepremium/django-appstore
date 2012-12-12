@@ -2,7 +2,6 @@
 {% load url from future %}
 {% load appstore_tags %}
 
-{% with blocked=app|update_blocker:env %}
 <a href="#uninstall_{{ app.pk }}" style="{% if app not in env.apps.all or not env %}display:none{% endif %}" role="button" class="btn uninstall" data-toggle="modal">{% trans 'Uninstall' %}</a>
 
 <div class="modal" id="uninstall_{{ app.pk }}" tabindex="-1" role="dialog" aria-labelledby="{% trans 'Install' %}" aria-hidden="true" style="display: none">
@@ -34,7 +33,7 @@
     </div>
     <div class="modal-body">
         <p>
-        {% if blocked %}
+        {% if app|update_blocker:env %}
             {% trans 'You already have an update in progress for this app. Do you want to make a plain copy ?' %}
         {% else %}
             {% if not app.deployed %}
@@ -47,10 +46,10 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
-        {% if app.deployed and not blocked %}
+        {% if app.deployed and not app|update_blocker:env %}
             <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="update" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Yes, update this app' %}</button>
         {% endif %}
-        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% if blocked or not app.deployed %}{% trans 'Yes, just copy' %}{% else %}{% trans 'No, just copy' %}{% endif %}</button>
+        <button class="btn btn-primary" data-appstore-app-slug="{{ app.pk }}" data-appstore-app-action="copy" data-appstore-app-url="{{ app.get_absolute_url }}">{% if app|update_blocker:env or not app.deployed %}{% trans 'Yes, just copy' %}{% else %}{% trans 'No, just copy' %}{% endif %}</button>
     </div>
 </div>
 
@@ -79,4 +78,3 @@
         <button data-appstore-app-slug="{{ app.pk }}" class="btn btn-primary" data-appstore-app-action="install" data-appstore-app-url="{{ app.get_absolute_url }}">{% trans 'Install' %}</button>
     </div>
 </div>
-{% endwith %}
