@@ -346,6 +346,14 @@ class AppDeployView(generic.DetailView):
     model = App
     template_name = 'appstore/app_deploy.html'
 
+    def get_object(self):
+        obj = super(AppDeployView, self).get_object()
+
+        if obj.deployed:
+            raise CannotEditDeployedApp(obj)
+
+        return obj
+
     def post(self, *args, **kwargs):
         """
         Set app.deployed=True and redirect to environment configuration url.

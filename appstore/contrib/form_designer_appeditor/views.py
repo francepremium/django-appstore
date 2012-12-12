@@ -1,4 +1,5 @@
 from form_designer.views import FormUpdateView
+from appstore.exceptions import CannotEditDeployedApp
 
 import rules_light
 
@@ -11,6 +12,9 @@ class AppFormUpdateView(FormUpdateView):
 
         rules_light.require(self.request.user, 'form_designer.form.update',
             self.appform.form)
+
+        if self.appform.app.deployed:
+            raise CannotEditDeployedApp(self.appform.app)
 
         return self.appform.form
 
