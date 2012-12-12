@@ -22,6 +22,7 @@ def is_staff_or_admin_of_environment(user, rule, environment):
 
 registry['appstore.environment.create'] = is_authenticated
 registry['appstore.environment.update'] = is_staff_or_admin_of_environment
+registry['appstore.environment.delete'] = is_staff_or_admin_of_environment
 
 
 def has_access_or_staff(user, rule, env):

@@ -16,6 +16,11 @@ from exceptions import AppstoreException, CannotEditDeployedApp
 
 
 @rules_light.class_decorator
+class EnvDeleteView(generic.DeleteView):
+    model = Environment
+
+
+@rules_light.class_decorator
 class EnvCreateView(generic.CreateView):
     model = Environment
     form_class = EnvironmentForm

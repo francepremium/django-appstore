@@ -5,7 +5,7 @@ from models import AppFeature, AppCategory
 from views import (AppCategoryListView, AppCategoryDetailView, AppDeployView,
     AppDetailView, AppCreateView, AppUpdateView, EnvUpdateView, EnvCreateView,
     UserEnvironmentListView, UserEnvironmentUpdateView, EnvActivateView,
-    UserEnvironmentDeleteView, UserEnvironmentCreateView)
+    UserEnvironmentDeleteView, UserEnvironmentCreateView, EnvDeleteView)
 
 urlpatterns = patterns('',
     url(r'env/create/$', EnvCreateView.as_view(),
@@ -14,6 +14,8 @@ urlpatterns = patterns('',
         name='appstore_env_activate'),
     url(r'env/(?P<pk>\d+)/update/$', EnvUpdateView.as_view(),
         name='appstore_env_update'),
+    url(r'env/(?P<pk>\d+)/delete/$', EnvDeleteView.as_view(),
+        name='appstore_env_delete'),
 
     url(r'env/(?P<env_pk>\d+)/users/$', UserEnvironmentListView.as_view(),
         name='appstore_userenvironment_list'),
