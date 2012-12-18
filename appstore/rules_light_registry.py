@@ -5,6 +5,7 @@ from models import UserEnvironment
 from rules_light import *
 
 
+@is_authenticated
 def is_staff_or_admin_of_environment(user, rule, environment):
     if not isinstance(user, User):
         return False
@@ -25,6 +26,7 @@ registry['appstore.environment.update'] = is_staff_or_admin_of_environment
 registry['appstore.environment.delete'] = is_staff_or_admin_of_environment
 
 
+@is_authenticated
 def has_access_or_staff(user, rule, env):
     if user.is_staff:
         return True
@@ -38,6 +40,7 @@ def has_access_or_staff(user, rule, env):
 registry['appstore.environment.read'] = has_access_or_staff
 
 
+@is_authenticated
 def staff_or_admin_of_environments(user, rule, app):
     if user.is_staff:
         return True
