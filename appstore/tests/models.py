@@ -172,3 +172,14 @@ class ModelsTestCase(unittest.TestCase):
 
         with self.assertRaises(UpdateAlreadyPendingDeployment) as cm:
             self.env.copy(self.ukulele_app, True)
+
+    def test_null_feature_app(self):
+        foo_app = App.objects.create(name='foo', deployed=True)
+        self.env.install(foo_app)
+        foo_app_copy = self.env.copy(foo_app, False)
+        foo_app_update = self.env.copy(foo_app, True)
+        foo_app_update.deployed = True
+        foo_app_update.save()
+        self.env.uninstall(foo_app_copy)
+        self.env.uninstall(foo_app_update)
+        self.assertEqual(self.env.apps.all().count(), 0)
