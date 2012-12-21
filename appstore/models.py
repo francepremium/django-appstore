@@ -179,21 +179,23 @@ class Environment(models.Model):
         if app not in self.apps.all():
             raise AppNotInstalled(self, app)
 
-        # are there any other apps that provide the same feature ?
-        has_alternative = AppFeature.objects.filter(pk=app.provides.pk,
-            provided_by__in=self.apps.filter(deployed=True).exclude(pk=app.pk))
+        if app.provides_id:
+            # are there any other apps that provide the same feature ?
+            has_alternative = AppFeature.objects.filter(pk=app.provides.pk,
+                provided_by__in=self.apps.filter(deployed=True
+                                                 ).exclude(pk=app.pk))
 
-        # if no other app provides the same feature as app
-        if not has_alternative:
-            # check if that feature is necessary
-            requirements = AppFeature.objects.filter(
-                required_by=self.apps.exclude(pk=app.pk))
+            # if no other app provides the same feature as app
+            if not has_alternative:
+                # check if that feature is necessary
+                requirements = AppFeature.objects.filter(
+                    required_by=self.apps.exclude(pk=app.pk))
 
-            if app.provides in requirements:
-                # in that case find what apps require it, and fail
-                blockers = self.apps.filter(requires=app.provides,
-                                            deployed=True)
-                raise CannotUninstallDependency(self, app, blockers)
+                if app.provides in requirements:
+                    # in that case find what apps require it, and fail
+                    blockers = self.apps.filter(requires=app.provides,
+                                                deployed=True)
+                    raise CannotUninstallDependency(self, app, blockers)
 
         self.apps.remove(app)
         post_app_uninstall.send(sender=self, app=app)
