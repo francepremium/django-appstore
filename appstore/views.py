@@ -296,6 +296,7 @@ class AppCreateView(generic.CreateView):
         """
         Install the newly created App in the current environment.
         """
+        form.instance.author = self.request.user
         result = super(AppCreateView, self).form_valid(form)
         messages.success(self.request, _(u'App %s created') % self.object)
         self.request.session['appstore_environment'].install(self.object)

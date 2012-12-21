@@ -24,7 +24,8 @@ def auto_appform(sender, instance, created, **kwargs):
     if instance.editor != 'appstore.contrib.form_designer_appeditor':
         return
 
-    form = Form.objects.create(author_id=1, verbose_name=instance.name)
+    form = Form.objects.create(author=instance.author,
+                               verbose_name=instance.name)
     AppForm(app=instance, form=form).save()
 signals.post_save.connect(auto_appform, sender=App)
 

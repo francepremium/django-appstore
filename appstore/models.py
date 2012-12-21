@@ -73,6 +73,8 @@ class App(models.Model):
     editor = models.CharField(null=True, blank=True, choices=EDITOR_MODULES,
         max_length=100)
 
+    author = models.ForeignKey('auth.User', null=True)
+
     @property
     def image_url(self):
         if self.image:
