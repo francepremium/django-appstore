@@ -218,6 +218,7 @@ class Environment(models.Model):
             image=app.image,
             category=app.category,
             provides=app.provides,
+            author=app.author,
             editor=app.editor,
         )
 

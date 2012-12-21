@@ -35,6 +35,7 @@ def copy_form(sender, source_app, new_app, **kwargs):
         return
 
     new_app.appform.form.verbose_name = source_app.appform.form.verbose_name
+    new_app.appform.form.author = source_app.appform.form.author
 
     for tab in source_app.appform.form.tab_set.all():
         new_tab = copy.deepcopy(tab)
