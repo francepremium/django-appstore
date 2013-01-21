@@ -13,7 +13,8 @@ class AppAlreadyInstalled(AppstoreException):
     """
     def __init__(self, env, app):
         super(AppAlreadyInstalled, self).__init__(
-            _(u'%s is already installed in env %s') % (app, env))
+            _(u'%(app)s is already installed in environment %(env)s') %
+            {'app': app, 'env': env})
 
 
 class AppNotInstalled(AppstoreException):
@@ -34,8 +35,8 @@ class CannotUninstallDependency(AppstoreException):
     """
     def __init__(self, env, app, required_by):
         super(CannotUninstallDependency, self).__init__(
-            _(u'Cannot uninstall %s from %s because %s depends on it') % (
-                app, env, required_by))
+            _(u'Cannot uninstall %(app)s from %(env)s because %(required_by)s depends on it') %
+            {'app': app, 'env': env, 'required_by': required_by})
 
 
 class CannotEditDeployedApp(AppstoreException):

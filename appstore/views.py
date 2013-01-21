@@ -254,20 +254,21 @@ class AppDetailView(generic.DetailView):
 
                 if action == 'install':
                     environment.install(app)
-                    msg = _(u'%s installed into environment %s') % (app, environment)
+                    msg = u'%(app)s installed into %(env)s'
                 elif action == 'uninstall':
                     environment.uninstall(app)
-                    msg = _(u'%s uninstalled from environment %s') % (app, environment)
+                    msg = u'%(app)s uninstalled from %(env)s'
                 elif action == 'copy':
                     new_app = environment.copy(app)
-                    msg = _(u'%s copied into environment %s') % (app, environment)
+                    msg = u'%(app)s copied into %(env)s'
                 elif action == 'update':
-                    msg = _(u'%s copied for update in environment %s') % (app, environment)
+                    msg = u'%(app)s copied for updateinto %(env)s'
                     new_app = environment.copy(app, True)
                 else:
                     return http.HttpResponseBadRequest('Unknown action')
 
-                messages.success(request, msg)
+                messages.success(request, _(msg) % {'app': app, 'env':
+                    environment})
 
                 if action in ('copy', 'update'):
                     return http.HttpResponseRedirect(reverse(
