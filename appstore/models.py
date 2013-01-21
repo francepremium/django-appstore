@@ -190,7 +190,7 @@ class Environment(models.Model):
             if not has_alternative:
                 # check if that feature is necessary
                 requirements = AppFeature.objects.filter(
-                    required_by=self.apps.exclude(pk=app.pk))
+                    required_by__in=self.apps.exclude(pk=app.pk))
 
                 if app.provides in requirements:
                     # in that case find what apps require it, and fail
