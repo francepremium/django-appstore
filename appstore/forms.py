@@ -35,7 +35,7 @@ class AppForm(autocomplete_light.FixedModelForm):
 
 
 class EnvironmentForm(forms.ModelForm):
-    name = forms.CharField(label=_(u'Workspace name'))
+    name = forms.CharField(label=_(u'Environment name'))
 
     def clean_name(self):
         name = self.cleaned_data['name']

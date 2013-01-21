@@ -154,7 +154,7 @@ class Environment(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name = _(u'Workspace')
+        verbose_name = _(u'Environment')
 
     def is_admin(self, user):
         return UserEnvironment.objects.get(user=user, environment=self
