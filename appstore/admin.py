@@ -24,17 +24,3 @@ admin.site.register(App, AppAdmin)
 class EnvironmentAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Environment, EnvironmentAdmin)
-
-
-import hyperadmin
-from hyperadmin.resources.models import ModelResource, InlineModelResource
-
-class AppResource(InlineModelResource):
-    model = App
-
-class AppCategoryResource(ModelResource):
-    inlines = [AppResource]
-    list_display = ['name']
-
-hyperadmin.site.register(AppCategory, AppCategoryResource)
-
