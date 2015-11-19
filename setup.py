@@ -74,7 +74,7 @@ setup(
         'django-forms-bootstrap',
         'django-rules-light',
         'mock-django',
-        'pil',
+        'pillow',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
