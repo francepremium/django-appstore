@@ -37,8 +37,7 @@ class EnvironmentMiddleware(object):
             user_env = UserEnvironment.objects.get(user=request.user,
                 default=True)
         except UserEnvironment.DoesNotExist:
-            env = Environment(name=request.user.email)
-            env.save()
+            env, c = Environment.objects.get_or_create(name=request.user.email)
             UserEnvironment(environment=env, user=request.user,
                     is_admin=True).save()
             request.session['appstore_environment'] = env

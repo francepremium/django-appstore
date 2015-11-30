@@ -58,17 +58,17 @@ class App(models.Model):
     image = models.ImageField(upload_to='appstore/app/image')
     category = models.ForeignKey(AppCategory, null=True, blank=True)
     tags = TaggableManager(blank=True)
-    in_appstore = models.BooleanField()
+    in_appstore = models.BooleanField(default=False)
 
     provides = models.ForeignKey(AppFeature, null=True, blank=True,
         related_name='provided_by')
     requires = models.ManyToManyField(AppFeature, blank=True,
         related_name='required_by')
-    default_for_feature = models.BooleanField()
+    default_for_feature = models.BooleanField(default=False)
 
     superseeds = models.ForeignKey('self', related_name='superseeded_by',
                                    null=True, blank=True)
-    deployed = models.BooleanField()
+    deployed = models.BooleanField(default=False)
 
     editor = models.CharField(null=True, blank=True, choices=EDITOR_MODULES,
         max_length=100)
@@ -252,8 +252,8 @@ signals.pre_delete.connect(mark_for_delete, Environment)
 class UserEnvironment(models.Model):
     environment = models.ForeignKey('Environment')
     user = models.ForeignKey('auth.user')
-    is_admin = models.BooleanField()
-    default = models.BooleanField()
+    is_admin = models.BooleanField(default=False)
+    default = models.BooleanField(default=True)
     creation_datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:

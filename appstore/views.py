@@ -61,10 +61,10 @@ class UserEnvironmentListView(generic.ListView):
         return UserEnvironment.objects.filter(environment=self.environment
             ).select_related('user')
 
-    def get_context_data(self, object_list):
+    def get_context_data(self, **kwargs):
         return {
             'environment': self.environment,
-            'userenvironment_list': object_list,
+            'userenvironment_list': self.object_list,
         }
 
 
